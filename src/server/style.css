@@ -1,0 +1,16 @@
+html,
+body,
+p {
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  display: block;
+}
+
+.icon-credit {
+  display: flex;
+  /* flex: 1; */
+  flex-direction: row;
+}
