@@ -1,34 +1,34 @@
+import {
+  getTranslationMatrix,
+  Matrix,
+  NinetyDegreeRotationMatrix
+} from "./Matrix";
+
 export class Vector {
-  private values: number[] = [];
+  public values: number[] = [];
+  public color: [number, number, number];
 
   get x() {
-    return this.values[0];
+    return this.values[0] ?? 0;
   }
   get y() {
-    return this.values[1];
+    return this.values[1] ?? 0;
   }
   get z() {
-    return this.values[2];
+    return this.values[2] ?? 0;
   }
 
   constructor(initialValues?: number[]) {
     if (initialValues) this.values.push(...initialValues);
-  }
-
-  private insert(value: number) {
-    this.values.push(value);
-  }
-
-  private remove(index: number) {
-    this.values.splice(index, 1);
+    this.color = [
+      Math.random() * 255,
+      Math.random() * 255,
+      Math.random() * 255
+    ];
   }
 
   public plus(that: Vector): Vector {
-    if (this.values.length !== that.values.length) throw new Error();
-
-    return new Vector(
-      this.values.map((value, index) => value + that.values[index])
-    );
+    return new Vector([this.x + that.x, this.y + that.y, this.z + that.z]);
   }
 
   public minus(that: Vector): Vector {
@@ -60,6 +60,11 @@ export class Vector {
     return this.times(1 / this.norm());
   }
 
+  public isEqual(that: Vector): boolean {
+    const cross = this.cross(that);
+    return cross.x === 0 && cross.y === 0 && cross.z === 0;
+  }
+
   public cross(that: Vector): Vector {
     return new Vector([
       this.y * that.z - this.z * that.y,
@@ -78,5 +83,55 @@ export class Vector {
 
   public reflect(normal: Vector): Vector {
     return this.minus(normal.times(2).times(normal.dot(this)));
+  }
+
+  public toHomogeneousCoordinates(): Vector {
+    return new Vector(
+      Array.from(
+        Array(4),
+        (_, index) => this.values[index] ?? (index !== 3 ? 0 : 1)
+      )
+    );
+  }
+
+  public translate(that: Vector): Vector {
+    const T = getTranslationMatrix(that.x, that.y, that.z);
+
+    return T.dot(this);
+  }
+
+  public rotate90(): Vector {
+    const rotationMatrix = NinetyDegreeRotationMatrix;
+
+    return rotationMatrix.dot(this);
+  }
+
+  public static hasCollisionWith(
+    AB: [Vector, Vector],
+    CD: [Vector, Vector]
+  ): boolean {
+    // houston we have a problem
+    const A = AB[0].x > AB[1].x ? AB[1] : AB[0];
+    const B = AB[0].x > AB[1].x ? AB[0] : AB[1];
+    const C = CD[0].x > CD[1].x ? CD[1] : CD[0];
+    const D = CD[0].x > CD[1].x ? CD[0] : CD[1];
+
+    const ABxAC = B.cross(C);
+    const ABxAD = B.cross(D);
+
+    if ((ABxAC.z >= 0 && ABxAD.z >= 0) || (ABxAC.z < 0 && ABxAD.z < 0))
+      return false;
+
+    const CDxCA = D.cross(A);
+    const CDxCB = D.cross(B);
+
+    if ((CDxCA.z >= 0 && CDxCB.z >= 0) || (CDxCA.z < 0 && CDxCB.z < 0))
+      return false;
+
+    return true;
+  }
+
+  public tangent(): Vector {
+    return this.rotate90().toUnitVector();
   }
 }
