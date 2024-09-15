@@ -1,4 +1,4 @@
-# Atividade Avaliativa: Interseção de Segmentos
+# Atividade Avaliativa: Vetores
 
 To install dependencies:
 

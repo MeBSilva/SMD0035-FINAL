@@ -110,20 +110,29 @@ export class Vector {
     AB: [Vector, Vector],
     CD: [Vector, Vector]
   ): boolean {
-    // houston we have a problem
-    const A = AB[0].x > AB[1].x ? AB[1] : AB[0];
-    const B = AB[0].x > AB[1].x ? AB[0] : AB[1];
-    const C = CD[0].x > CD[1].x ? CD[1] : CD[0];
-    const D = CD[0].x > CD[1].x ? CD[0] : CD[1];
+    const a = AB[0].x > AB[1].x ? AB[1] : AB[0];
+    const c = CD[0].x > CD[1].x ? CD[1] : CD[0];
 
-    const ABxAC = B.cross(C);
-    const ABxAD = B.cross(D);
+    const deltaA = new Vector([0 - a.x, 0 - a.y]);
+
+    const ab = (AB[0].y > AB[1].y ? AB[0] : AB[1]).translate(deltaA);
+    const ac = (CD[0].x > CD[1].x ? CD[1] : CD[0]).translate(deltaA);
+    const ad = (CD[0].x > CD[1].x ? CD[0] : CD[1]).translate(deltaA);
+
+    const ABxAC = ab.cross(ac);
+    const ABxAD = ab.cross(ad);
 
     if ((ABxAC.z >= 0 && ABxAD.z >= 0) || (ABxAC.z < 0 && ABxAD.z < 0))
       return false;
 
-    const CDxCA = D.cross(A);
-    const CDxCB = D.cross(B);
+    const deltaC = new Vector([0 - c.x, 0 - c.y]);
+
+    const cd = (CD[0].x > CD[1].x ? CD[0] : CD[1]).translate(deltaC);
+    const ca = (AB[0].x > AB[1].x ? AB[1] : AB[0]).translate(deltaC);
+    const cb = (AB[0].x > AB[1].x ? AB[0] : AB[1]).translate(deltaC);
+
+    const CDxCA = cd.cross(ca);
+    const CDxCB = cd.cross(cb);
 
     if ((CDxCA.z >= 0 && CDxCB.z >= 0) || (CDxCA.z < 0 && CDxCB.z < 0))
       return false;
