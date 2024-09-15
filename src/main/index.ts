@@ -1,6 +1,6 @@
+import { Vector } from "@/domain/Vector";
 import p5 from "p5";
 import { drawVector } from "./drawVector";
-import { Vector } from "@/domain/Vector";
 
 const sketch = (p: p5) => {
   const vectorPairs: [Vector, Vector][] = [];
@@ -23,22 +23,22 @@ const sketch = (p: p5) => {
 
     const vec2Delta = new Vector([
       0 - vectorPairs[1][0].x,
-      0 - vectorPairs[1][0].y
+      0 - vectorPairs[1][0].y,
     ]);
 
     vectorPairs[1] = [
       vectorPairs[1][0].translate(vec2Delta),
-      vectorPairs[1][1].translate(vec2Delta)
+      vectorPairs[1][1].translate(vec2Delta),
     ];
 
     const vec1Delta = new Vector([
       vectorPairs[1][1].x - vectorPairs[0][0].x,
-      vectorPairs[1][1].y - vectorPairs[0][0].y
+      vectorPairs[1][1].y - vectorPairs[0][0].y,
     ]);
 
     vectorPairs[0] = [
       vectorPairs[0][0].translate(vec1Delta),
-      vectorPairs[0][1].translate(vec1Delta)
+      vectorPairs[0][1].translate(vec1Delta),
     ];
 
     const sumOrigin = vectorPairs[1][0].plus(vectorPairs[0][0]);
@@ -48,29 +48,29 @@ const sketch = (p: p5) => {
 
     vectorPairs.push([
       sumOrigin.translate(sumDelta),
-      vectorPairs[1][1].plus(vectorPairs[0][1]).translate(sumDelta)
+      vectorPairs[1][1].plus(vectorPairs[0][1]).translate(sumDelta),
     ]);
   };
 
   const handleSum = () => {
     const vec1Delta = new Vector([
       0 - vectorPairs[0][0].x,
-      0 - vectorPairs[0][0].y
+      0 - vectorPairs[0][0].y,
     ]);
 
     vectorPairs[0] = [
       vectorPairs[0][0].translate(vec1Delta),
-      vectorPairs[0][1].translate(vec1Delta)
+      vectorPairs[0][1].translate(vec1Delta),
     ];
 
     const vec2Delta = new Vector([
       vectorPairs[0][1].x - vectorPairs[1][0].x,
-      vectorPairs[0][1].y - vectorPairs[1][0].y
+      vectorPairs[0][1].y - vectorPairs[1][0].y,
     ]);
 
     vectorPairs[1] = [
       vectorPairs[1][0].translate(vec2Delta),
-      vectorPairs[1][1].translate(vec2Delta)
+      vectorPairs[1][1].translate(vec2Delta),
     ];
 
     const sumOrigin = vectorPairs[0][0].plus(vectorPairs[1][0]);
@@ -80,7 +80,7 @@ const sketch = (p: p5) => {
 
     vectorPairs.push([
       sumOrigin.translate(sumDelta),
-      vectorPairs[0][1].plus(vectorPairs[1][1]).translate(sumDelta)
+      vectorPairs[0][1].plus(vectorPairs[1][1]).translate(sumDelta),
     ]);
   };
 
@@ -103,7 +103,7 @@ const sketch = (p: p5) => {
     return false;
   };
 
-  p.mousePressed = _ => {
+  p.mousePressed = (_) => {
     if (
       p.mouseButton === p.LEFT &&
       !isMouseHittingNav() &&
@@ -132,7 +132,7 @@ const sketch = (p: p5) => {
       .createButton("revert addition order")
       .position(
         defaultXOffset * 2 + buttons.showSumButton.width,
-        defaultYOffset
+        defaultYOffset,
       )
       .attribute("disabled", "true")
       .mousePressed(revertSum);
@@ -142,7 +142,7 @@ const sketch = (p: p5) => {
         defaultXOffset * 3 +
           buttons.revertSumButton.width +
           buttons.showSumButton.width,
-        defaultYOffset
+        defaultYOffset,
       )
       .mousePressed(() => {
         vectorPairs.splice(0, vectorPairs.length);
@@ -163,7 +163,7 @@ const sketch = (p: p5) => {
     if (points.length === 4) {
       vectorPairs.push([
         new Vector([points[0], points[1]]),
-        new Vector([points[2], points[3]])
+        new Vector([points[2], points[3]]),
       ]);
       points.splice(0, points.length);
     }
@@ -173,7 +173,7 @@ const sketch = (p: p5) => {
         points[0],
         points[1],
         p.mouseX - p.width / 2,
-        (p.mouseY - p.height / 2) * -1
+        (p.mouseY - p.height / 2) * -1,
       );
       p.pop();
     }
@@ -193,7 +193,9 @@ const sketch = (p: p5) => {
     // p.text(`Possui colisão? ${hasCollision}`, 0, 0);
     // p.pop();
 
-    vectorPairs.forEach(pair => drawVector(p, pair[0], pair[1]));
+    for (const pair of vectorPairs) {
+      drawVector(p, pair[0], pair[1]);
+    }
   };
 };
 

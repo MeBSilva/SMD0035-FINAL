@@ -19,7 +19,7 @@ export class Matrix {
         rowValues.push(element * vectorValues[j]);
       }
       resultingValues.push(
-        rowValues.reduce((accumulator, value) => accumulator + value, 0)
+        rowValues.reduce((accumulator, value) => accumulator + value, 0),
       );
     }
 
@@ -31,7 +31,7 @@ const identityMatrixValues = [
   [1, 0, 0, 0],
   [0, 1, 0, 0],
   [0, 0, 1, 0],
-  [0, 0, 0, 1]
+  [0, 0, 0, 1],
 ];
 
 const getNinetyDegreeRotationMatrixValues = () => {
@@ -45,13 +45,13 @@ const getNinetyDegreeRotationMatrixValues = () => {
 };
 
 export const NinetyDegreeRotationMatrix = new Matrix(
-  getNinetyDegreeRotationMatrixValues()
+  getNinetyDegreeRotationMatrixValues(),
 );
 
 export const getTranslationMatrix = (
   deltaX: number,
   deltaY: number,
-  deltaZ: number
+  deltaZ: number,
 ): Matrix => {
   const altered = JSON.parse(JSON.stringify(identityMatrixValues));
   altered[3][0] = deltaX;

@@ -1,23 +1,24 @@
 {
-	"name": "atv_vetores",
-	"module": "src/main/index.ts",
-	"type": "module",
-	"scripts": {
-		"watch": "bun build src/main/index.ts --outdir ./dist --target browser --watch",
-		"build": "bun build src/main/index.ts --outdir ./dist --target browser --minify",
-		"start:server": "bun run src/server/index.ts",
-		"start:dev": "(trap 'kill 0' SIGINT; bun start:server & bun watch)",
-		"typecheck": "bun tsc --noEmit"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.1",
-		"@types/bun": "latest",
-		"prettier": "^3.3.3",
-		"typescript": "^5.5.4"
-	},
-	"dependencies": {
-		"@types/p5": "^1.7.6",
-		"hono": "^4.5.2",
-		"p5": "^1.9.4"
-	}
+  "name": "atv_vetores",
+  "module": "src/main/index.ts",
+  "type": "module",
+  "scripts": {
+    "watch": "bun build src/main/index.ts --outdir ./dist --target browser --watch",
+    "build": "bun build src/main/index.ts --outdir ./dist --target browser --minify",
+    "start:server": "bun run src/server/index.ts",
+    "start:dev": "(trap 'kill 0' SIGINT; bun start:server & bun watch)",
+    "typecheck": "bun tsc --noEmit",
+    "lint": "bun biome check {src,tests}/**/*.ts {src,tests}/*.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.1",
+    "@types/bun": "latest",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@types/p5": "^1.7.6",
+    "hono": "^4.5.2",
+    "p5": "^1.9.4"
+  }
 }

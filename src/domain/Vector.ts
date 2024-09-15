@@ -1,7 +1,7 @@
 import {
-  getTranslationMatrix,
   Matrix,
-  NinetyDegreeRotationMatrix
+  NinetyDegreeRotationMatrix,
+  getTranslationMatrix,
 } from "./Matrix";
 
 export class Vector {
@@ -23,7 +23,7 @@ export class Vector {
     this.color = [
       Math.random() * 255,
       Math.random() * 255,
-      Math.random() * 255
+      Math.random() * 255,
     ];
   }
 
@@ -40,19 +40,19 @@ export class Vector {
   }
 
   public times(scalar: number): Vector {
-    return new Vector(this.values.map(value => value * scalar));
+    return new Vector(this.values.map((value) => value * scalar));
   }
 
   public dot(that: Vector): number {
     return this.values.reduce(
       (accumulator, value, index) => accumulator + value * that.values[index],
-      0
+      0,
     );
   }
 
   private norm(): number {
     return Math.sqrt(
-      this.values.reduce((accumulator, value) => accumulator + value ** 2, 0)
+      this.values.reduce((accumulator, value) => accumulator + value ** 2, 0),
     );
   }
 
@@ -69,7 +69,7 @@ export class Vector {
     return new Vector([
       this.y * that.z - this.z * that.y,
       this.z * that.x - this.x * that.z,
-      this.x * that.y - this.y * that.x
+      this.x * that.y - this.y * that.x,
     ]);
   }
 
@@ -89,8 +89,8 @@ export class Vector {
     return new Vector(
       Array.from(
         Array(4),
-        (_, index) => this.values[index] ?? (index !== 3 ? 0 : 1)
-      )
+        (_, index) => this.values[index] ?? (index !== 3 ? 0 : 1),
+      ),
     );
   }
 
@@ -108,7 +108,7 @@ export class Vector {
 
   public static hasCollisionWith(
     AB: [Vector, Vector],
-    CD: [Vector, Vector]
+    CD: [Vector, Vector],
   ): boolean {
     const a = AB[0].x > AB[1].x ? AB[1] : AB[0];
     const c = CD[0].x > CD[1].x ? CD[1] : CD[0];
