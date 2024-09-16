@@ -13,7 +13,7 @@ export const handleInputs = ({
   buttons: {
     showSumButton: p5.Element;
     revertSumButton: p5.Element;
-    // collisionButton: p5.Element;
+    collisionButton: p5.Element;
     clearButton: p5.Element;
   };
 }) => {
@@ -35,10 +35,14 @@ export const handleInputs = ({
     p.pop();
   }
 
-  if (vectorPairs.length === 2)
+  if (vectorPairs.length === 2) {
     buttons.showSumButton.removeAttribute("disabled");
-  if (vectorPairs.length !== 2)
+    buttons.collisionButton.removeAttribute("disabled");
+  }
+  if (vectorPairs.length !== 2) {
     buttons.showSumButton.attribute("disabled", "true");
+    buttons.collisionButton.attribute("disabled", "true");
+  }
   if (vectorPairs.length === 3)
     buttons.revertSumButton.removeAttribute("disabled");
   if (vectorPairs.length !== 3)

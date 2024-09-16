@@ -153,7 +153,7 @@ export class Vector3 extends Vector {
     const rotationMatrix = getNinetyDegreeRotationMatrixValues();
     rotationMatrix.values[1][0] = 1;
     rotationMatrix.values[0][1] = -1;
-    console.log("aa", rotationMatrix.values);
+
     return rotationMatrix.dot(this);
   }
 }

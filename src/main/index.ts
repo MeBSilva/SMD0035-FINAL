@@ -14,10 +14,10 @@ const sketch = (p: p5) => {
   const buttons: {
     showSumButton: p5.Element;
     revertSumButton: p5.Element;
-    // collisionButton: p5.Element;
+    collisionButton: p5.Element;
     clearButton: p5.Element;
   } = {} as typeof buttons;
-  // let collisionButton: p5.Element;
+  let collisionButton: p5.Element;
   let hasCollision = false;
 
   const revertSum = () => {
@@ -115,20 +115,25 @@ const sketch = (p: p5) => {
 
     p.createCanvas(p.windowWidth, p.windowHeight);
 
-    // buttons.collisionButton = p
-    //   .createButton("check for collisions")
-    //   .position(defaultXOffset, defaultYOffset)
-    //   .attribute("disabled", "true")
-    //   .mousePressed(handleCollision);
+    buttons.collisionButton = p
+      .createButton("check for collisions")
+      .position(defaultXOffset, defaultYOffset)
+      .attribute("disabled", "true");
+    // .mousePressed(handleCollision);
     buttons.showSumButton = p
       .createButton("visualize addition")
-      .position(defaultXOffset, defaultYOffset)
+      .position(
+        defaultXOffset * 2 + buttons.collisionButton.width,
+        defaultYOffset,
+      )
       .attribute("disabled", "true")
       .mousePressed(handleSum);
     buttons.revertSumButton = p
       .createButton("revert addition order")
       .position(
-        defaultXOffset * 2 + buttons.showSumButton.width,
+        defaultXOffset * 3 +
+          buttons.collisionButton.width +
+          buttons.showSumButton.width,
         defaultYOffset,
       )
       .attribute("disabled", "true")
@@ -136,7 +141,8 @@ const sketch = (p: p5) => {
     buttons.clearButton = p
       .createButton("clear")
       .position(
-        defaultXOffset * 3 +
+        defaultXOffset * 4 +
+          buttons.collisionButton.width +
           buttons.revertSumButton.width +
           buttons.showSumButton.width,
         defaultYOffset,
@@ -150,11 +156,11 @@ const sketch = (p: p5) => {
   p.draw = () => {
     setupCartesian(p);
     handleInputs({ p, buttons, points, vectorPairs });
-    // p.push();
-    // p.scale(1, -1);
-    // p.textSize(15);
-    // p.text(`Possui colisão? ${hasCollision}`, 0, 0);
-    // p.pop();
+    p.push();
+    p.scale(1, -1);
+    p.textSize(15);
+    p.text(`Possui colisão? ${hasCollision}`, 0, 0);
+    p.pop();
 
     for (let i = 0; i < vectorPairs.length; i++) {
       const color: [number, number, number] =
