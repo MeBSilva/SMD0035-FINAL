@@ -9,9 +9,9 @@ export abstract class Vector {
   public values: number[] = [];
   public color: [number, number, number];
 
-  constructor(initialValues?: number[]) {
+  constructor(initialValues?: number[], color?: [number, number, number]) {
     if (initialValues) this.values.push(...initialValues);
-    this.color = [
+    this.color = color ?? [
       Math.random() * 255,
       Math.random() * 255,
       Math.random() * 255,
@@ -85,8 +85,11 @@ export class Vector3 extends Vector {
     return this.values[2];
   }
 
-  constructor(initialValues?: [number, number, number]) {
-    super(initialValues ? [...initialValues, 1] : [0, 0, 0, 1]);
+  constructor(
+    initialValues?: [number, number, number],
+    color?: [number, number, number],
+  ) {
+    super(initialValues ? [...initialValues, 1] : [0, 0, 0, 1], color);
   }
 
   public plus(that: this): this {

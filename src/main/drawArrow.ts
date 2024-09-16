@@ -31,11 +31,11 @@ export const drawArrow = (
   );
 
   p.scale(1, -1);
-  p.text(`${originVector.values}`, originVector.x, originVector.y * -1);
-  p.text(
-    `${destinationVector.values}`,
-    destinationVector.x,
-    destinationVector.y * -1,
-  );
+  // p.text(`${originVector.values}`, originVector.x, originVector.y * -1);
+  // p.text(
+  //   `${destinationVector.values}`,
+  //   destinationVector.x,
+  //   destinationVector.y * -1,
+  // );
   p.pop();
 };

@@ -21,39 +21,30 @@ const sketch = (p: p5) => {
   let hasCollision = false;
 
   const revertSum = () => {
-    vectorPairs.splice(2, vectorPairs.length);
-
     const vec2Delta = new Vector3([
       0 - vectorPairs[1][0].x,
       0 - vectorPairs[1][0].y,
       0,
     ]);
 
-    vectorPairs[1] = [
+    const newVector0 = [
       vectorPairs[1][0].translate(vec2Delta),
       vectorPairs[1][1].translate(vec2Delta),
-    ];
+    ] as [Vector3, Vector3];
 
     const vec1Delta = new Vector3([
-      vectorPairs[1][1].x - vectorPairs[0][0].x,
-      vectorPairs[1][1].y - vectorPairs[0][0].y,
+      newVector0[1].x - vectorPairs[0][0].x,
+      newVector0[1].y - vectorPairs[0][0].y,
       0,
     ]);
 
-    vectorPairs[0] = [
+    const newVector1 = [
       vectorPairs[0][0].translate(vec1Delta),
       vectorPairs[0][1].translate(vec1Delta),
-    ];
+    ] as [Vector3, Vector3];
 
-    const sumOrigin = vectorPairs[1][0].plus(vectorPairs[0][0]);
-    const sumDeltaX = vectorPairs[1][0].x - sumOrigin.x;
-    const sumDeltaY = vectorPairs[1][0].y - sumOrigin.y;
-    const sumDelta = new Vector3([sumDeltaX, sumDeltaY, 0]);
-
-    vectorPairs.push([
-      sumOrigin.translate(sumDelta),
-      vectorPairs[1][1].plus(vectorPairs[0][1]).translate(sumDelta),
-    ]);
+    vectorPairs[0] = newVector0;
+    vectorPairs[1] = newVector1;
   };
 
   const handleSum = () => {
@@ -165,7 +156,11 @@ const sketch = (p: p5) => {
     // p.text(`Possui colisão? ${hasCollision}`, 0, 0);
     // p.pop();
 
-    for (const [origin, destination] of vectorPairs) {
+    for (let i = 0; i < vectorPairs.length; i++) {
+      const color: [number, number, number] =
+        i === 0 ? [200, 50, 50] : i === 1 ? [50, 50, 200] : [50, 200, 50];
+      const [origin, destination] = vectorPairs[i];
+      destination.color = color;
       drawArrow(p, origin, destination);
     }
   };
