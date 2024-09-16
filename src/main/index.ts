@@ -1,9 +1,11 @@
-import { Vector } from "@/domain/Vector";
+import { Vector, Vector3 } from "@/domain/Vector";
 import p5 from "p5";
-import { drawVector } from "./drawVector";
+import { drawArrow } from "./drawArrow";
+import { setupCartesian } from "./setupCartesian";
+import { handleInputs } from "./handleInputs";
 
 const sketch = (p: p5) => {
-  const vectorPairs: [Vector, Vector][] = [];
+  const vectorPairs: [Vector3, Vector3][] = [];
   const points: number[] = [];
 
   const defaultXOffset = 15;
@@ -21,9 +23,10 @@ const sketch = (p: p5) => {
   const revertSum = () => {
     vectorPairs.splice(2, vectorPairs.length);
 
-    const vec2Delta = new Vector([
+    const vec2Delta = new Vector3([
       0 - vectorPairs[1][0].x,
       0 - vectorPairs[1][0].y,
+      0,
     ]);
 
     vectorPairs[1] = [
@@ -31,9 +34,10 @@ const sketch = (p: p5) => {
       vectorPairs[1][1].translate(vec2Delta),
     ];
 
-    const vec1Delta = new Vector([
+    const vec1Delta = new Vector3([
       vectorPairs[1][1].x - vectorPairs[0][0].x,
       vectorPairs[1][1].y - vectorPairs[0][0].y,
+      0,
     ]);
 
     vectorPairs[0] = [
@@ -44,7 +48,7 @@ const sketch = (p: p5) => {
     const sumOrigin = vectorPairs[1][0].plus(vectorPairs[0][0]);
     const sumDeltaX = vectorPairs[1][0].x - sumOrigin.x;
     const sumDeltaY = vectorPairs[1][0].y - sumOrigin.y;
-    const sumDelta = new Vector([sumDeltaX, sumDeltaY]);
+    const sumDelta = new Vector3([sumDeltaX, sumDeltaY, 0]);
 
     vectorPairs.push([
       sumOrigin.translate(sumDelta),
@@ -53,9 +57,10 @@ const sketch = (p: p5) => {
   };
 
   const handleSum = () => {
-    const vec1Delta = new Vector([
+    const vec1Delta = new Vector3([
       0 - vectorPairs[0][0].x,
       0 - vectorPairs[0][0].y,
+      0,
     ]);
 
     vectorPairs[0] = [
@@ -63,9 +68,10 @@ const sketch = (p: p5) => {
       vectorPairs[0][1].translate(vec1Delta),
     ];
 
-    const vec2Delta = new Vector([
+    const vec2Delta = new Vector3([
       vectorPairs[0][1].x - vectorPairs[1][0].x,
       vectorPairs[0][1].y - vectorPairs[1][0].y,
+      0,
     ]);
 
     vectorPairs[1] = [
@@ -76,7 +82,7 @@ const sketch = (p: p5) => {
     const sumOrigin = vectorPairs[0][0].plus(vectorPairs[1][0]);
     const sumDeltaX = vectorPairs[0][0].x - sumOrigin.x;
     const sumDeltaY = vectorPairs[0][0].y - sumOrigin.y;
-    const sumDelta = new Vector([sumDeltaX, sumDeltaY]);
+    const sumDelta = new Vector3([sumDeltaX, sumDeltaY, 0]);
 
     vectorPairs.push([
       sumOrigin.translate(sumDelta),
@@ -84,13 +90,13 @@ const sketch = (p: p5) => {
     ]);
   };
 
-  const handleCollision = () => {
-    if (vectorPairs.length >= 2) {
-      hasCollision = Vector.hasCollisionWith(vectorPairs[0], vectorPairs[1]);
-      return;
-    }
-    hasCollision = false;
-  };
+  // const handleCollision = () => {
+  //   if (vectorPairs.length >= 2) {
+  //     hasCollision = Vector.hasCollisionWith(vectorPairs[0], vectorPairs[1]);
+  //     return;
+  //   }
+  //   hasCollision = false;
+  // };
 
   const isMouseHittingNav = () => {
     if (
@@ -151,50 +157,16 @@ const sketch = (p: p5) => {
   };
 
   p.draw = () => {
-    p.background(180);
-
-    p.translate(p.width / 2, p.height / 2).scale(1, -1);
-
-    p.push();
-    p.stroke("black").line(-1000, 0, 1000, 0);
-    p.stroke("black").line(0, -1000, 0, 1000);
-    p.pop();
-
-    if (points.length === 4) {
-      vectorPairs.push([
-        new Vector([points[0], points[1]]),
-        new Vector([points[2], points[3]]),
-      ]);
-      points.splice(0, points.length);
-    }
-    if (points.length === 2) {
-      p.push();
-      p.stroke("black").line(
-        points[0],
-        points[1],
-        p.mouseX - p.width / 2,
-        (p.mouseY - p.height / 2) * -1,
-      );
-      p.pop();
-    }
-
-    if (vectorPairs.length === 2)
-      buttons.showSumButton.removeAttribute("disabled");
-    if (vectorPairs.length !== 2)
-      buttons.showSumButton.attribute("disabled", "true");
-    if (vectorPairs.length === 3)
-      buttons.revertSumButton.removeAttribute("disabled");
-    if (vectorPairs.length !== 3)
-      buttons.revertSumButton.attribute("disabled", "true");
-
+    setupCartesian(p);
+    handleInputs({ p, buttons, points, vectorPairs });
     // p.push();
     // p.scale(1, -1);
     // p.textSize(15);
     // p.text(`Possui colisão? ${hasCollision}`, 0, 0);
     // p.pop();
 
-    for (const pair of vectorPairs) {
-      drawVector(p, pair[0], pair[1]);
+    for (const [origin, destination] of vectorPairs) {
+      drawArrow(p, origin, destination);
     }
   };
 };

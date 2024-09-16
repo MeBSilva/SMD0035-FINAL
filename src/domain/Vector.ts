@@ -1,22 +1,13 @@
 import {
-  Matrix,
-  NinetyDegreeRotationMatrix,
+  getIdentityMatrix3,
+  getNinetyDegreeRotationMatrixValues,
   getTranslationMatrix,
+  Matrix3,
 } from "./Matrix";
 
-export class Vector {
+export abstract class Vector {
   public values: number[] = [];
   public color: [number, number, number];
-
-  get x() {
-    return this.values[0] ?? 0;
-  }
-  get y() {
-    return this.values[1] ?? 0;
-  }
-  get z() {
-    return this.values[2] ?? 0;
-  }
 
   constructor(initialValues?: number[]) {
     if (initialValues) this.values.push(...initialValues);
@@ -27,23 +18,19 @@ export class Vector {
     ];
   }
 
-  public plus(that: Vector): Vector {
-    return new Vector([this.x + that.x, this.y + that.y, this.z + that.z]);
-  }
+  public abstract plus(that: this): this;
 
-  public minus(that: Vector): Vector {
+  public minus(that: this): this {
     return this.plus(that.inverse());
   }
 
-  public inverse(): Vector {
+  public inverse(): this {
     return this.times(-1);
   }
 
-  public times(scalar: number): Vector {
-    return new Vector(this.values.map((value) => value * scalar));
-  }
+  public abstract times(scalar: number): this;
 
-  public dot(that: Vector): number {
+  public dot(that: this): number {
     return this.values.reduce(
       (accumulator, value, index) => accumulator + value * that.values[index],
       0,
@@ -52,95 +39,118 @@ export class Vector {
 
   private norm(): number {
     return Math.sqrt(
-      this.values.reduce((accumulator, value) => accumulator + value ** 2, 0),
-    );
-  }
-
-  public toUnitVector(): Vector {
-    return this.times(1 / this.norm());
-  }
-
-  public isEqual(that: Vector): boolean {
-    const cross = this.cross(that);
-    return cross.x === 0 && cross.y === 0 && cross.z === 0;
-  }
-
-  public cross(that: Vector): Vector {
-    return new Vector([
-      this.y * that.z - this.z * that.y,
-      this.z * that.x - this.x * that.z,
-      this.x * that.y - this.y * that.x,
-    ]);
-  }
-
-  public projection(that: Vector): Vector {
-    return that.times(this.dot(that) / that.dot(that));
-  }
-
-  public slide(normal: Vector): Vector {
-    return this.minus(normal.times(normal.dot(this)));
-  }
-
-  public reflect(normal: Vector): Vector {
-    return this.minus(normal.times(2).times(normal.dot(this)));
-  }
-
-  public toHomogeneousCoordinates(): Vector {
-    return new Vector(
-      Array.from(
-        Array(4),
-        (_, index) => this.values[index] ?? (index !== 3 ? 0 : 1),
+      this.values.reduce(
+        (accumulator, value, index) =>
+          index < 4 ? accumulator + value ** 2 : accumulator,
+        0,
       ),
     );
   }
 
-  public translate(that: Vector): Vector {
-    const T = getTranslationMatrix(that.x, that.y, that.z);
-
-    return T.dot(this);
+  public toUnitVector(): this {
+    return this.times(1 / this.norm());
   }
 
-  public rotate90(): Vector {
-    const rotationMatrix = NinetyDegreeRotationMatrix;
+  public isEqual(that: this): boolean {
+    const cross = this.cross(that);
+    return cross.values.every((value) => value === 0);
+  }
+
+  public abstract cross(that: this): this;
+
+  public projection(that: this): this {
+    return that.times(this.dot(that) / that.dot(that));
+  }
+
+  public slide(normal: this): this {
+    return this.minus(normal.times(normal.dot(this)));
+  }
+
+  public reflect(normal: this): this {
+    return this.minus(normal.times(2).times(normal.dot(this)));
+  }
+}
+
+export class Vector3 extends Vector {
+  get x() {
+    return this.values[0];
+  }
+  get y() {
+    return this.values[1];
+  }
+  get z() {
+    return this.values[2];
+  }
+  get w() {
+    return this.values[2];
+  }
+
+  constructor(initialValues?: [number, number, number]) {
+    super(initialValues ? [...initialValues, 1] : [0, 0, 0, 1]);
+  }
+
+  public plus(that: this): this {
+    return new Vector3([
+      this.x + that.x,
+      this.y + that.y,
+      this.z + that.z,
+    ]) as this;
+  }
+
+  public times(scalar: number): this {
+    return new Vector3([
+      this.values[0] * scalar,
+      this.values[1] * scalar,
+      this.values[2] * scalar,
+    ]) as this;
+  }
+
+  public cross(that: this): this {
+    return new Vector3([
+      this.y * that.z - this.z * that.y,
+      this.z * that.x - this.x * that.z,
+      this.x * that.y - this.y * that.x,
+    ]) as this;
+  }
+
+  public projection(that: this): this {
+    return that.times(this.dot(that) / that.dot(that));
+  }
+
+  public slide(normal: this): this {
+    return this.minus(normal.times(normal.dot(this)));
+  }
+
+  public reflect(normal: this): this {
+    return this.minus(normal.times(2).times(normal.dot(this)));
+  }
+
+  public translate(that: Vector3): Vector3 {
+    const T = getTranslationMatrix(that.x, that.y, that.z);
+
+    return T.dot(this) as this;
+  }
+
+  public scale(scalar: number): Vector3 {
+    const S = getIdentityMatrix3();
+    S.values[0][0] = scalar;
+    S.values[1][1] = scalar;
+    S.values[2][2] = scalar;
+
+    return S.dot(this) as this;
+  }
+
+  public rotate90(): Vector3 {
+    const rotationMatrix = getNinetyDegreeRotationMatrixValues();
 
     return rotationMatrix.dot(this);
   }
 
-  public static hasCollisionWith(
-    AB: [Vector, Vector],
-    CD: [Vector, Vector],
-  ): boolean {
-    const a = AB[0].x > AB[1].x ? AB[1] : AB[0];
-    const c = CD[0].x > CD[1].x ? CD[1] : CD[0];
-
-    const deltaA = new Vector([0 - a.x, 0 - a.y]);
-
-    const ab = (AB[0].y > AB[1].y ? AB[0] : AB[1]).translate(deltaA);
-    const ac = (CD[0].x > CD[1].x ? CD[1] : CD[0]).translate(deltaA);
-    const ad = (CD[0].x > CD[1].x ? CD[0] : CD[1]).translate(deltaA);
-
-    const ABxAC = ab.cross(ac);
-    const ABxAD = ab.cross(ad);
-
-    if ((ABxAC.z >= 0 && ABxAD.z >= 0) || (ABxAC.z < 0 && ABxAD.z < 0))
-      return false;
-
-    const deltaC = new Vector([0 - c.x, 0 - c.y]);
-
-    const cd = (CD[0].x > CD[1].x ? CD[0] : CD[1]).translate(deltaC);
-    const ca = (AB[0].x > AB[1].x ? AB[1] : AB[0]).translate(deltaC);
-    const cb = (AB[0].x > AB[1].x ? AB[0] : AB[1]).translate(deltaC);
-
-    const CDxCA = cd.cross(ca);
-    const CDxCB = cd.cross(cb);
-
-    if ((CDxCA.z >= 0 && CDxCB.z >= 0) || (CDxCA.z < 0 && CDxCB.z < 0))
-      return false;
-
-    return true;
-  }
-
-  public tangent(): Vector {
-    return this.rotate90().toUnitVector();
+  public rotateMinus90(): Vector3 {
+    const rotationMatrix = getNinetyDegreeRotationMatrixValues();
+    rotationMatrix.values[1][0] = 1;
+    rotationMatrix.values[0][1] = -1;
+    console.log("aa", rotationMatrix.values);
+    return rotationMatrix.dot(this);
   }
 }
