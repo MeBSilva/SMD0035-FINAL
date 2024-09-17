@@ -18,8 +18,7 @@ const sketch = (p: p5) => {
     collisionButton: p5.Element;
     clearButton: p5.Element;
   } = {} as typeof buttons;
-  let collisionButton: p5.Element;
-  let hasCollision = false;
+  let collisionPoint: Vector3 | undefined;
 
   const revertSum = () => {
     const vec2Delta = new Vector3([
@@ -84,10 +83,10 @@ const sketch = (p: p5) => {
 
   const handleCollision = () => {
     if (vectorPairs.length >= 2) {
-      hasCollision = checkForCollision(vectorPairs[0], vectorPairs[1]);
+      collisionPoint = checkForCollision(vectorPairs[0], vectorPairs[1]);
       return;
     }
-    hasCollision = false;
+    collisionPoint = undefined;
   };
 
   const isMouseHittingNav = () => {
@@ -150,7 +149,7 @@ const sketch = (p: p5) => {
       )
       .mousePressed(() => {
         vectorPairs.splice(0, vectorPairs.length);
-        hasCollision = false;
+        collisionPoint = undefined;
       });
   };
 
@@ -158,9 +157,10 @@ const sketch = (p: p5) => {
     setupCartesian(p);
     handleInputs({ p, buttons, points, vectorPairs });
     p.push();
+    if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
     p.scale(1, -1);
     p.textSize(15);
-    p.text(`Possui colisão? ${hasCollision}`, 0, 0);
+    p.text(`Possui colisão? ${!!collisionPoint}`, 0, 0);
     p.pop();
 
     for (let i = 0; i < vectorPairs.length; i++) {
