@@ -3,6 +3,7 @@ import p5 from "p5";
 import { drawArrow } from "./drawArrow";
 import { setupCartesian } from "./setupCartesian";
 import { handleInputs } from "./handleInputs";
+import { checkForCollision } from "@/domain/checkCollision";
 
 const sketch = (p: p5) => {
   const vectorPairs: [Vector3, Vector3][] = [];
@@ -81,13 +82,13 @@ const sketch = (p: p5) => {
     ]);
   };
 
-  // const handleCollision = () => {
-  //   if (vectorPairs.length >= 2) {
-  //     hasCollision = Vector.hasCollisionWith(vectorPairs[0], vectorPairs[1]);
-  //     return;
-  //   }
-  //   hasCollision = false;
-  // };
+  const handleCollision = () => {
+    if (vectorPairs.length >= 2) {
+      hasCollision = checkForCollision(vectorPairs[0], vectorPairs[1]);
+      return;
+    }
+    hasCollision = false;
+  };
 
   const isMouseHittingNav = () => {
     if (
@@ -118,8 +119,8 @@ const sketch = (p: p5) => {
     buttons.collisionButton = p
       .createButton("check for collisions")
       .position(defaultXOffset, defaultYOffset)
-      .attribute("disabled", "true");
-    // .mousePressed(handleCollision);
+      .attribute("disabled", "true")
+      .mousePressed(handleCollision);
     buttons.showSumButton = p
       .createButton("visualize addition")
       .position(
