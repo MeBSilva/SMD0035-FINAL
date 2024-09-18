@@ -37,7 +37,7 @@ export abstract class Vector {
     );
   }
 
-  private norm(): number {
+  public norm(): number {
     return Math.sqrt(
       this.values.reduce(
         (accumulator, value, index) =>
@@ -90,6 +90,10 @@ export class Vector3 extends Vector {
     color?: [number, number, number],
   ) {
     super(initialValues ? [...initialValues, 1] : [0, 0, 0, 1], color);
+  }
+
+  public isNull() {
+    return !this.x && !this.y && !this.z;
   }
 
   public plus(that: this): this {
@@ -155,5 +159,61 @@ export class Vector3 extends Vector {
     rotationMatrix.values[0][1] = -1;
 
     return rotationMatrix.dot(this);
+  }
+
+  private getOctant() {
+    if (this.x > 0 && this.y >= 0 && this.x > this.y) return "first";
+    if (this.x > 0 && this.y > 0 && this.y >= this.x) return "second";
+    if (this.x <= 0 && this.y > 0 && this.y > -this.x) return "third";
+    if (this.x < 0 && this.y > 0 && -this.x >= this.y) return "fourth";
+    if (this.x < 0 && this.y <= 0 && this.y > this.x) return "fifth";
+    if (this.x < 0 && this.y < 0 && this.x >= this.y) return "sixth";
+    if (this.x >= 0 && this.y < 0 && -this.y > this.x) return "seventh";
+    if (this.x > 0 && this.y < 0 && this.x >= -this.y) return "eighth";
+    throw new Error("invalid pair");
+  }
+
+  public findPseudoAngleWithXAxis(): number {
+    if (this.isNull()) return 0;
+
+    const octant = this.getOctant();
+
+    switch (octant) {
+      case "first": {
+        const py = this.y / this.x;
+        return +(py * (180 / Math.PI)).toFixed(2);
+      }
+      case "second": {
+        const px = this.x / this.y;
+        return +((2 - px) * (180 / Math.PI)).toFixed(2);
+      }
+      case "third": {
+        const px = -this.x / this.y;
+        return +((2 + px) * (180 / Math.PI)).toFixed(2);
+      }
+      case "fourth": {
+        const py = this.y / -this.x;
+        return +((4 - py) * (180 / Math.PI)).toFixed(2);
+      }
+      case "fifth": {
+        const py = this.y / this.x;
+        return +((4 + py) * (180 / Math.PI)).toFixed(2);
+      }
+      case "sixth": {
+        const px = this.x / this.y;
+        return +((6 - px) * (180 / Math.PI)).toFixed(2);
+      }
+      case "seventh": {
+        const px = -this.x / this.y;
+        return +((6 + px) * (180 / Math.PI)).toFixed(2);
+      }
+      case "eighth": {
+        const py = this.y / -this.x;
+        return +((8 - py) * (180 / Math.PI)).toFixed(2);
+      }
+
+      default:
+        throw new Error("Invalid octant");
+    }
   }
 }

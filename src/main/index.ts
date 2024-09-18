@@ -4,9 +4,18 @@ import { drawArrow } from "./drawArrow";
 import { setupCartesian } from "./setupCartesian";
 import { handleInputs } from "./handleInputs";
 import { checkForCollision } from "@/domain/checkCollision";
+import {
+  findPseudoThetaByDotProduct,
+  findPseudoThetaSquareMethod,
+  findThetaByCrossProduct,
+  findThetaByDotProduct,
+} from "@/domain/findTheta";
 
 const sketch = (p: p5) => {
-  const vectorPairs: [Vector3, Vector3][] = [];
+  const vectorPairs: [Vector3, Vector3][] = [
+    // [new Vector3([0, 0, 0]), new Vector3([100, -0.0, 0])],
+    // [new Vector3([0, 0, 0]), new Vector3([100, 100, 0])],
+  ];
   const points: number[] = [];
 
   const defaultXOffset = 15;
@@ -160,7 +169,38 @@ const sketch = (p: p5) => {
     if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
     p.scale(1, -1);
     p.textSize(15);
-    p.text(`Possui colisão? ${!!collisionPoint}`, 0, 0);
+    p.text(
+      `Possui colisão? ${!!collisionPoint}`,
+      -p.width / 2 + defaultXOffset,
+      -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
+    );
+    if (vectorPairs.length === 2) {
+      p.text(
+        `Theta (dot) = ${findThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+        -p.width / 2 + defaultXOffset,
+        -p.height / 2 + buttons.collisionButton.height * 4 + defaultYOffset,
+      );
+      p.text(
+        `Theta (cross) = ${findThetaByCrossProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+        -p.width / 2 + defaultXOffset,
+        -p.height / 2 + buttons.collisionButton.height * 5 + defaultYOffset,
+      );
+      p.text(
+        `Pseudo theta (dot) = ${findPseudoThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+        -p.width / 2 + defaultXOffset,
+        -p.height / 2 + buttons.collisionButton.height * 6 + defaultYOffset,
+      );
+      p.text(
+        `Pseudo theta (octant) = ${findPseudoThetaSquareMethod(vectorPairs[0][1], vectorPairs[1][1])}º`,
+        -p.width / 2 + defaultXOffset,
+        -p.height / 2 + buttons.collisionButton.height * 7 + defaultYOffset,
+      );
+    }
+    p.pop();
+    p.push();
+    p.rectMode("center");
+    p.fill(180, 180, 180, 0);
+    p.rect(0, 0, 200, 200);
     p.pop();
 
     for (let i = 0; i < vectorPairs.length; i++) {
