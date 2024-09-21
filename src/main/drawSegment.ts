@@ -15,12 +15,7 @@ export const drawArrow = (
   const trianglePoint3 = delta.scale(4);
 
   p.push();
-  p.stroke(...destinationVector.color).line(
-    originVector.x,
-    originVector.y,
-    destinationVector.x,
-    destinationVector.y,
-  );
+  drawSegment(p, originVector, destinationVector);
   p.fill(...destinationVector.color).triangle(
     trianglePoint1.x + destinationVector.x,
     trianglePoint1.y + destinationVector.y,
@@ -36,6 +31,21 @@ export const drawArrow = (
     `${destinationVector.values}`,
     destinationVector.x,
     destinationVector.y * -1,
+  );
+  p.pop();
+};
+
+export const drawSegment = (
+  p: p5,
+  originVector: Vector3,
+  destinationVector: Vector3,
+) => {
+  p.push();
+  p.stroke(...destinationVector.color).line(
+    originVector.x,
+    originVector.y,
+    destinationVector.x,
+    destinationVector.y,
   );
   p.pop();
 };

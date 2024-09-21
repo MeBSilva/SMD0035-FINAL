@@ -7,6 +7,7 @@ import {
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import type { Buttons } from "./UI/buttons";
+import { drawArrow, drawSegment } from "./drawSegment";
 
 export const handleUIState = ({
   p,
@@ -28,20 +29,7 @@ export const handleUIState = ({
   points: number[];
 }) => {
   if (state === "particles") {
-    p.push();
-    p.stroke("black").line(
-      -p.width / 2,
-      p.height / 2,
-      p.width / 2,
-      -p.height / 2,
-    );
-    p.stroke("black").line(
-      -p.width / 2,
-      p.height / 2,
-      p.width / 2,
-      -p.height / 2,
-    );
-    p.pop();
+    handleParticleMode({ buttons, p, defaultYOffset, defaultXOffset });
 
     return;
   }
@@ -85,55 +73,154 @@ export const handleUIState = ({
   if (vectorPairs.length !== 3)
     buttons.revertSumButton.attribute("disabled", "true");
 
-  if (state === "angles") {
-    buttons.angleModeButton.attribute("disabled", "true");
-    buttons.vectorModeButton.removeAttribute("disabled");
-    if (vectorPairs.length === 2) {
-      p.push();
-      p.scale(1, -1);
-      p.textSize(15);
-      p.text(
-        `Theta (dot) = ${findThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 4 + defaultYOffset,
-      );
-      p.text(
-        `Theta (cross) = ${findThetaByCrossProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 5 + defaultYOffset,
-      );
-      p.text(
-        `Pseudo theta (dot) = ${findPseudoThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 6 + defaultYOffset,
-      );
-      p.text(
-        `Pseudo theta (octant) = ${findPseudoThetaSquareMethod(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 7 + defaultYOffset,
-      );
-      p.pop();
-    }
-    p.push();
-    p.rectMode("center");
-    p.fill(180, 180, 180, 0);
-    p.rect(0, 0, 200, 200);
-    p.pop();
+  if (state === "angles")
+    handleAngleMode({
+      buttons,
+      collisionPoint,
+      defaultXOffset,
+      defaultYOffset,
+      p,
+      vectorPairs,
+    });
+
+  if (state === "vectors")
+    handleVectorMode({
+      buttons,
+      collisionPoint,
+      defaultXOffset,
+      defaultYOffset,
+      p,
+    });
+
+  for (let i = 0; i < vectorPairs.length; i++) {
+    const color: [number, number, number] =
+      i === 0 ? [200, 50, 50] : i === 1 ? [50, 50, 200] : [50, 200, 50];
+    const [origin, destination] = vectorPairs[i];
+    destination.color = color;
+    drawArrow(p, origin, destination);
   }
+};
 
-  if (state === "vectors") {
-    buttons.angleModeButton.removeAttribute("disabled");
-    buttons.vectorModeButton.attribute("disabled", "true");
-
+const handleAngleMode = ({
+  buttons,
+  vectorPairs,
+  defaultXOffset,
+  defaultYOffset,
+  p,
+}: {
+  collisionPoint: Vector3 | undefined;
+  p: p5;
+  buttons: Buttons;
+  defaultXOffset: number;
+  defaultYOffset: number;
+  vectorPairs: [Vector3, Vector3][];
+}) => {
+  buttons.angleModeButton.attribute("disabled", "true");
+  buttons.particleModeButton.removeAttribute("disabled");
+  buttons.vectorModeButton.removeAttribute("disabled");
+  if (vectorPairs.length === 2) {
     p.push();
-    if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
     p.scale(1, -1);
     p.textSize(15);
     p.text(
-      `Possui colisão? ${!!collisionPoint}`,
+      `Theta (dot) = ${findThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
       -p.width / 2 + defaultXOffset,
-      -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
+      -p.height / 2 + buttons.collisionButton.height * 4 + defaultYOffset,
+    );
+    p.text(
+      `Theta (cross) = ${findThetaByCrossProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      -p.width / 2 + defaultXOffset,
+      -p.height / 2 + buttons.collisionButton.height * 5 + defaultYOffset,
+    );
+    p.text(
+      `Pseudo theta (dot) = ${findPseudoThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      -p.width / 2 + defaultXOffset,
+      -p.height / 2 + buttons.collisionButton.height * 6 + defaultYOffset,
+    );
+    p.text(
+      `Pseudo theta (octant) = ${findPseudoThetaSquareMethod(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      -p.width / 2 + defaultXOffset,
+      -p.height / 2 + buttons.collisionButton.height * 7 + defaultYOffset,
     );
     p.pop();
   }
+  p.push();
+  p.rectMode("center");
+  p.fill(180, 180, 180, 0);
+  p.rect(0, 0, 200, 200);
+  p.pop();
+};
+
+const handleVectorMode = ({
+  buttons,
+  collisionPoint,
+  p,
+  defaultXOffset,
+  defaultYOffset,
+}: {
+  collisionPoint: Vector3 | undefined;
+  p: p5;
+  buttons: Buttons;
+  defaultXOffset: number;
+  defaultYOffset: number;
+}) => {
+  buttons.angleModeButton.removeAttribute("disabled");
+  buttons.particleModeButton.removeAttribute("disabled");
+  buttons.vectorModeButton.attribute("disabled", "true");
+
+  p.push();
+  if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
+  p.scale(1, -1);
+  p.textSize(15);
+  p.text(
+    `Possui colisão? ${!!collisionPoint}`,
+    -p.width / 2 + defaultXOffset,
+    -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
+  );
+  p.pop();
+};
+
+const handleParticleMode = ({
+  p,
+  buttons,
+  defaultYOffset,
+  defaultXOffset,
+}: {
+  p: p5;
+  buttons: Buttons;
+  defaultYOffset: number;
+  defaultXOffset: number;
+}) => {
+  buttons.angleModeButton.removeAttribute("disabled");
+  buttons.particleModeButton.attribute("disabled", "true");
+  buttons.vectorModeButton.removeAttribute("disabled");
+
+  const screenLimits = {
+    left: -p.width / 2 + defaultXOffset,
+    right: p.width / 2 - defaultXOffset,
+    top: p.height / 2 - defaultYOffset * 2,
+    bottom: -p.height / 2 + defaultXOffset,
+  };
+
+  const topLeftLimit = new Vector3(
+    [screenLimits.left, screenLimits.top, 0],
+    [0, 0, 0],
+  );
+  const topRightLimit = new Vector3(
+    [screenLimits.right, screenLimits.top, 0],
+    [0, 0, 0],
+  );
+  const bottomLeftLimit = new Vector3(
+    [screenLimits.left, screenLimits.bottom, 0],
+    [0, 0, 0],
+  );
+  const bottomRightLimit = new Vector3(
+    [screenLimits.right, screenLimits.bottom, 0],
+    [0, 0, 0],
+  );
+
+  drawSegment(p, topLeftLimit, topRightLimit);
+  drawSegment(p, topLeftLimit, bottomLeftLimit);
+  drawSegment(p, bottomLeftLimit, bottomRightLimit);
+  drawSegment(p, bottomRightLimit, topRightLimit);
 };

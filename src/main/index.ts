@@ -1,8 +1,6 @@
 import { Vector3 } from "@/domain/Vector";
 import p5 from "p5";
-import { drawArrow } from "./drawArrow";
 import { setupCartesian } from "./setupCartesian";
-import { handleInputs } from "./handleInputs";
 import { checkForCollision } from "@/domain/checkCollision";
 import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
@@ -187,6 +185,22 @@ const sketch = (p: p5) => {
         points.push(0, 0);
         state = "angles";
       });
+    buttons.particleModeButton = p
+      .createButton("change to particle mode")
+      .position(
+        defaultXOffset * 7 +
+          buttons.clearButton.width +
+          buttons.collisionButton.width +
+          buttons.revertSumButton.width +
+          buttons.vectorModeButton.width +
+          buttons.angleModeButton.width +
+          buttons.showSumButton.width,
+        defaultYOffset,
+      )
+      .mousePressed(() => {
+        clearBoard();
+        state = "particles";
+      });
   };
 
   p.draw = () => {
@@ -201,14 +215,6 @@ const sketch = (p: p5) => {
       defaultYOffset,
       points,
     });
-
-    for (let i = 0; i < vectorPairs.length; i++) {
-      const color: [number, number, number] =
-        i === 0 ? [200, 50, 50] : i === 1 ? [50, 50, 200] : [50, 200, 50];
-      const [origin, destination] = vectorPairs[i];
-      destination.color = color;
-      drawArrow(p, origin, destination);
-    }
   };
 };
 

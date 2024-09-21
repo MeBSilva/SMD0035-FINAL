@@ -7,4 +7,5 @@ export type Buttons = {
   clearButton: p5.Element;
   vectorModeButton: p5.Element;
   angleModeButton: p5.Element;
+  particleModeButton: p5.Element;
 };
