@@ -8,7 +8,7 @@ import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
 
 const sketch = (p: p5) => {
-  let state: "angles" | "vectors" = "vectors";
+  let state: "angles" | "vectors" | "particles" = "vectors";
 
   const vectorPairs: [Vector3, Vector3][] = [];
   const points: number[] = [];

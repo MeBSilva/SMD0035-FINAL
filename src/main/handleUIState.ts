@@ -18,7 +18,7 @@ export const handleUIState = ({
   collisionPoint,
   points,
 }: {
-  state: "angles" | "vectors";
+  state: "angles" | "vectors" | "particles";
   collisionPoint: Vector3 | undefined;
   vectorPairs: [Vector3, Vector3][];
   p: p5;
@@ -27,6 +27,30 @@ export const handleUIState = ({
   defaultYOffset: number;
   points: number[];
 }) => {
+  if (state === "particles") {
+    p.push();
+    p.stroke("black").line(
+      -p.width / 2,
+      p.height / 2,
+      p.width / 2,
+      -p.height / 2,
+    );
+    p.stroke("black").line(
+      -p.width / 2,
+      p.height / 2,
+      p.width / 2,
+      -p.height / 2,
+    );
+    p.pop();
+
+    return;
+  }
+
+  p.push();
+  p.stroke("black").line(-p.width / 2, 0, p.width / 2, 0);
+  p.stroke("black").line(0, -p.height / 2, 0, p.height / 2);
+  p.pop();
+
   if (points.length === 4) {
     vectorPairs.push([
       new Vector3([points[0], points[1], 0]),
@@ -96,6 +120,7 @@ export const handleUIState = ({
     p.rect(0, 0, 200, 200);
     p.pop();
   }
+
   if (state === "vectors") {
     buttons.angleModeButton.removeAttribute("disabled");
     buttons.vectorModeButton.attribute("disabled", "true");

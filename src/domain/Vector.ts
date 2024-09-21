@@ -84,6 +84,18 @@ export class Vector3 extends Vector {
   get w() {
     return this.values[2];
   }
+  set x(value: number) {
+    this.values[0] = value;
+  }
+  set y(value: number) {
+    this.values[1] = value;
+  }
+  set z(value: number) {
+    this.values[2] = value;
+  }
+  set w(value: number) {
+    this.values[3] = value;
+  }
 
   constructor(
     initialValues?: [number, number, number],
