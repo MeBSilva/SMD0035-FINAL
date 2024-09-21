@@ -62,6 +62,8 @@ export const handleUIState = ({
     buttons.revertSumButton.attribute("disabled", "true");
 
   if (state === "angles") {
+    buttons.angleModeButton.attribute("disabled", "true");
+    buttons.vectorModeButton.removeAttribute("disabled");
     if (vectorPairs.length === 2) {
       p.push();
       p.scale(1, -1);
@@ -95,6 +97,9 @@ export const handleUIState = ({
     p.pop();
   }
   if (state === "vectors") {
+    buttons.angleModeButton.removeAttribute("disabled");
+    buttons.vectorModeButton.attribute("disabled", "true");
+
     p.push();
     if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
     p.scale(1, -1);

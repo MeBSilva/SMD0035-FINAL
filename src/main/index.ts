@@ -102,7 +102,7 @@ const sketch = (p: p5) => {
       p.mouseY <= 30 + defaultYOffset
     )
       return true;
-    console.log("hm", p.mouseX);
+
     return false;
   };
 
@@ -153,11 +153,12 @@ const sketch = (p: p5) => {
           buttons.showSumButton.width,
         defaultYOffset,
       )
-      .mousePressed(clearBoard);
-    buttons.alterState = p
-      .createButton(
-        `change to ${state === "vectors" ? "angle mode" : "vector mode"}`,
-      )
+      .mousePressed(() => {
+        clearBoard();
+        if (state === "angles") points.push(0, 0);
+      });
+    buttons.vectorModeButton = p
+      .createButton("change to vector mode")
       .position(
         defaultXOffset * 5 +
           buttons.clearButton.width +
@@ -168,10 +169,23 @@ const sketch = (p: p5) => {
       )
       .mousePressed(() => {
         clearBoard();
+        state = "vectors";
+      });
+    buttons.angleModeButton = p
+      .createButton("change to angle mode")
+      .position(
+        defaultXOffset * 6 +
+          buttons.clearButton.width +
+          buttons.collisionButton.width +
+          buttons.revertSumButton.width +
+          buttons.vectorModeButton.width +
+          buttons.showSumButton.width,
+        defaultYOffset,
+      )
+      .mousePressed(() => {
+        clearBoard();
         points.push(0, 0);
-        state = state === "vectors" ? "angles" : "vectors";
-        (buttons.alterState.elt as HTMLButtonElement).innerText =
-          `change to ${state === "vectors" ? "angle mode" : "vector mode"}`;
+        state = "angles";
       });
   };
 

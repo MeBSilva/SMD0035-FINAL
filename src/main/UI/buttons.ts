@@ -5,5 +5,6 @@ export type Buttons = {
   revertSumButton: p5.Element;
   collisionButton: p5.Element;
   clearButton: p5.Element;
-  alterState: p5.Element;
+  vectorModeButton: p5.Element;
+  angleModeButton: p5.Element;
 };
