@@ -8,12 +8,13 @@ import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
+import type { Segment3 } from "@/domain/Segment";
 
 export const handleUIState = ({
   p,
   state,
   buttons,
-  vectorPairs,
+  segments,
   defaultXOffset,
   defaultYOffset,
   collisionPoint,
@@ -21,7 +22,7 @@ export const handleUIState = ({
 }: {
   state: "angles" | "vectors" | "particles";
   collisionPoint: Vector3 | undefined;
-  vectorPairs: [Vector3, Vector3][];
+  segments: Segment3[];
   p: p5;
   buttons: Buttons;
   defaultXOffset: number;
@@ -40,12 +41,12 @@ export const handleUIState = ({
   p.pop();
 
   if (points.length === 4) {
-    vectorPairs.push([
+    segments.push([
       new Vector3([points[0], points[1], 0]),
       new Vector3([points[2], points[3], 0]),
     ]);
     points.splice(0, points.length);
-    if (state === "angles" && vectorPairs.length < 2) {
+    if (state === "angles" && segments.length < 2) {
       points.push(0, 0);
     }
   }
@@ -60,17 +61,17 @@ export const handleUIState = ({
     p.pop();
   }
 
-  if (vectorPairs.length === 2) {
+  if (segments.length === 2) {
     buttons.showSumButton.removeAttribute("disabled");
     buttons.collisionButton.removeAttribute("disabled");
   }
-  if (vectorPairs.length !== 2) {
+  if (segments.length !== 2) {
     buttons.showSumButton.attribute("disabled", "true");
     buttons.collisionButton.attribute("disabled", "true");
   }
-  if (vectorPairs.length === 3)
+  if (segments.length === 3)
     buttons.revertSumButton.removeAttribute("disabled");
-  if (vectorPairs.length !== 3)
+  if (segments.length !== 3)
     buttons.revertSumButton.attribute("disabled", "true");
 
   if (state === "angles")
@@ -80,7 +81,7 @@ export const handleUIState = ({
       defaultXOffset,
       defaultYOffset,
       p,
-      vectorPairs,
+      segments,
     });
 
   if (state === "vectors")
@@ -92,10 +93,10 @@ export const handleUIState = ({
       p,
     });
 
-  for (let i = 0; i < vectorPairs.length; i++) {
+  for (let i = 0; i < segments.length; i++) {
     const color: [number, number, number] =
       i === 0 ? [200, 50, 50] : i === 1 ? [50, 50, 200] : [50, 200, 50];
-    const [origin, destination] = vectorPairs[i];
+    const [origin, destination] = segments[i];
     destination.color = color;
     drawArrow(p, origin, destination);
   }
@@ -103,7 +104,7 @@ export const handleUIState = ({
 
 const handleAngleMode = ({
   buttons,
-  vectorPairs,
+  segments,
   defaultXOffset,
   defaultYOffset,
   p,
@@ -113,32 +114,32 @@ const handleAngleMode = ({
   buttons: Buttons;
   defaultXOffset: number;
   defaultYOffset: number;
-  vectorPairs: [Vector3, Vector3][];
+  segments: Segment3[];
 }) => {
   buttons.angleModeButton.attribute("disabled", "true");
   buttons.particleModeButton.removeAttribute("disabled");
   buttons.vectorModeButton.removeAttribute("disabled");
-  if (vectorPairs.length === 2) {
+  if (segments.length === 2) {
     p.push();
     p.scale(1, -1);
     p.textSize(15);
     p.text(
-      `Theta (dot) = ${findThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      `Theta (dot) = ${findThetaByDotProduct(segments[0][1], segments[1][1])}º`,
       -p.width / 2 + defaultXOffset,
       -p.height / 2 + buttons.collisionButton.height * 4 + defaultYOffset,
     );
     p.text(
-      `Theta (cross) = ${findThetaByCrossProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      `Theta (cross) = ${findThetaByCrossProduct(segments[0][1], segments[1][1])}º`,
       -p.width / 2 + defaultXOffset,
       -p.height / 2 + buttons.collisionButton.height * 5 + defaultYOffset,
     );
     p.text(
-      `Pseudo theta (dot) = ${findPseudoThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      `Pseudo theta (dot) = ${findPseudoThetaByDotProduct(segments[0][1], segments[1][1])}º`,
       -p.width / 2 + defaultXOffset,
       -p.height / 2 + buttons.collisionButton.height * 6 + defaultYOffset,
     );
     p.text(
-      `Pseudo theta (octant) = ${findPseudoThetaSquareMethod(vectorPairs[0][1], vectorPairs[1][1])}º`,
+      `Pseudo theta (octant) = ${findPseudoThetaSquareMethod(segments[0][1], segments[1][1])}º`,
       -p.width / 2 + defaultXOffset,
       -p.height / 2 + buttons.collisionButton.height * 7 + defaultYOffset,
     );

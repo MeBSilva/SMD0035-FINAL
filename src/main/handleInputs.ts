@@ -1,6 +1,7 @@
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import type { Buttons } from "./UI/buttons";
+import type { Segment3 } from "@/domain/Segment";
 
 export const handleInputs = ({
   points,
@@ -8,7 +9,7 @@ export const handleInputs = ({
   buttons,
   p,
 }: {
-  vectorPairs: [Vector3, Vector3][];
+  vectorPairs: Segment3[];
   points: number[];
   p: p5;
   buttons: Buttons;

@@ -4,6 +4,7 @@ import {
   getTranslationMatrix,
   Matrix3,
 } from "./Matrix";
+import type { Segment3 } from "./Segment";
 
 export abstract class Vector {
   public values: number[] = [];
@@ -138,7 +139,7 @@ export class Vector3 extends Vector {
     return this.minus(normal.times(normal.dot(this)));
   }
 
-  public reflect([A, B]: [Vector3, Vector3]): this {
+  public reflect([A, B]: Segment3): this {
     const deltaX = B.x - A.x;
     const deltaY = B.y - A.y;
     const normal = new Vector3([deltaX, deltaY, 0])

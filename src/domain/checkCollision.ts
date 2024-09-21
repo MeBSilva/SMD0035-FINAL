@@ -1,8 +1,9 @@
+import type { Segment3 } from "./Segment";
 import { Vector3 } from "./Vector";
 
 export const checkForCollision = (
-  AB: [Vector3, Vector3],
-  CD: [Vector3, Vector3],
+  AB: Segment3,
+  CD: Segment3,
 ): undefined | Vector3 => {
   const A = new Vector3([0, 0, 0]);
   const B = new Vector3([AB[1].x - AB[0].x, AB[1].y - AB[0].y, 0]);

@@ -1,16 +1,22 @@
 import { Vector3 } from "@/domain/Vector";
 import p5 from "p5";
 import { setupCartesian } from "./setupCartesian";
-import { checkForCollision } from "@/domain/checkCollision";
 import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
 import { Particle } from "./actors/particle";
+import {
+  handleCollision,
+  handleMousePress,
+  revertSegmentSum,
+  sumSegments,
+} from "./utils";
+import type { Segment3 } from "@/domain/Segment";
 
 const sketch = (p: p5) => {
   let state: "angles" | "vectors" | "particles" = "vectors";
 
   let particle: Particle | undefined;
-  const vectorPairs: [Vector3, Vector3][] = [];
+  let segments: Segment3[] = [];
   const points: number[] = [];
 
   const defaultXOffset = 15;
@@ -19,102 +25,21 @@ const sketch = (p: p5) => {
   const buttons: Buttons = {} as Buttons;
   let collisionPoint: Vector3 | undefined;
 
-  const revertSum = () => {
-    const vec2Delta = new Vector3([
-      0 - vectorPairs[1][0].x,
-      0 - vectorPairs[1][0].y,
-      0,
-    ]);
-
-    const newVector0 = [
-      vectorPairs[1][0].translate(vec2Delta),
-      vectorPairs[1][1].translate(vec2Delta),
-    ] as [Vector3, Vector3];
-
-    const vec1Delta = new Vector3([
-      newVector0[1].x - vectorPairs[0][0].x,
-      newVector0[1].y - vectorPairs[0][0].y,
-      0,
-    ]);
-
-    const newVector1 = [
-      vectorPairs[0][0].translate(vec1Delta),
-      vectorPairs[0][1].translate(vec1Delta),
-    ] as [Vector3, Vector3];
-
-    vectorPairs[0] = newVector0;
-    vectorPairs[1] = newVector1;
-  };
-
-  const handleSum = () => {
-    const vec1Delta = new Vector3([
-      0 - vectorPairs[0][0].x,
-      0 - vectorPairs[0][0].y,
-      0,
-    ]);
-
-    vectorPairs[0] = [
-      vectorPairs[0][0].translate(vec1Delta),
-      vectorPairs[0][1].translate(vec1Delta),
-    ];
-
-    const vec2Delta = new Vector3([
-      vectorPairs[0][1].x - vectorPairs[1][0].x,
-      vectorPairs[0][1].y - vectorPairs[1][0].y,
-      0,
-    ]);
-
-    vectorPairs[1] = [
-      vectorPairs[1][0].translate(vec2Delta),
-      vectorPairs[1][1].translate(vec2Delta),
-    ];
-
-    const sumOrigin = vectorPairs[0][0].plus(vectorPairs[1][0]);
-    const sumDeltaX = vectorPairs[0][0].x - sumOrigin.x;
-    const sumDeltaY = vectorPairs[0][0].y - sumOrigin.y;
-    const sumDelta = new Vector3([sumDeltaX, sumDeltaY, 0]);
-
-    vectorPairs.push([
-      sumOrigin.translate(sumDelta),
-      vectorPairs[0][1].plus(vectorPairs[1][1]).translate(sumDelta),
-    ]);
-  };
-
-  const handleCollision = () => {
-    if (vectorPairs.length >= 2) {
-      collisionPoint = checkForCollision(vectorPairs[0], vectorPairs[1]);
-      return;
-    }
-    collisionPoint = undefined;
-  };
-
   const clearBoard = () => {
     points.splice(0, points.length);
-    vectorPairs.splice(0, vectorPairs.length);
+    segments = [];
     collisionPoint = undefined;
     particle = undefined;
   };
 
-  const isMouseHittingNav = () => {
-    if (
-      p.mouseX >= defaultXOffset &&
-      p.mouseX <= p.width - defaultXOffset &&
-      p.mouseY >= defaultYOffset &&
-      p.mouseY <= 30 + defaultYOffset
-    )
-      return true;
-
-    return false;
-  };
-
   p.mousePressed = (_) => {
-    if (
-      p.mouseButton === p.LEFT &&
-      !isMouseHittingNav() &&
-      vectorPairs.length < 2
-    ) {
-      points.push(p.mouseX - p.width / 2, (p.mouseY - p.height / 2) * -1);
-    }
+    const newPoints = handleMousePress({
+      p,
+      segments,
+      defaultXOffset,
+      defaultYOffset,
+    });
+    points.push(...newPoints);
   };
 
   p.setup = () => {
@@ -126,7 +51,9 @@ const sketch = (p: p5) => {
       .createButton("check for collisions")
       .position(defaultXOffset, defaultYOffset)
       .attribute("disabled", "true")
-      .mousePressed(handleCollision);
+      .mousePressed(() => {
+        collisionPoint = handleCollision({ segments });
+      });
     buttons.showSumButton = p
       .createButton("visualize addition")
       .position(
@@ -134,7 +61,10 @@ const sketch = (p: p5) => {
         defaultYOffset,
       )
       .attribute("disabled", "true")
-      .mousePressed(handleSum);
+      .mousePressed(() => {
+        if (segments.length >= 2)
+          segments = sumSegments(segments as [Segment3, Segment3]);
+      });
     buttons.revertSumButton = p
       .createButton("revert addition order")
       .position(
@@ -144,7 +74,12 @@ const sketch = (p: p5) => {
         defaultYOffset,
       )
       .attribute("disabled", "true")
-      .mousePressed(revertSum);
+      .mousePressed(() => {
+        if (segments.length >= 3)
+          segments = revertSegmentSum(
+            segments as [Segment3, Segment3, Segment3],
+          );
+      });
     buttons.clearButton = p
       .createButton("clear")
       .position(
@@ -218,7 +153,7 @@ const sketch = (p: p5) => {
       buttons,
       p,
       state,
-      vectorPairs,
+      segments,
       collisionPoint,
       defaultXOffset,
       defaultYOffset,
