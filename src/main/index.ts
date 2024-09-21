@@ -16,7 +16,7 @@ const sketch = (p: p5) => {
   let state: "angles" | "vectors" | "particles" = "vectors";
 
   let particle: Particle | undefined;
-  let segments: Segment3[] = [];
+  const segments: Segment3[] = [];
   const points: number[] = [];
 
   const defaultXOffset = 15;
@@ -27,7 +27,7 @@ const sketch = (p: p5) => {
 
   const clearBoard = () => {
     points.splice(0, points.length);
-    segments = [];
+    segments.splice(0, segments.length);
     collisionPoint = undefined;
     particle = undefined;
   };
@@ -62,8 +62,11 @@ const sketch = (p: p5) => {
       )
       .attribute("disabled", "true")
       .mousePressed(() => {
-        if (segments.length >= 2)
-          segments = sumSegments(segments as [Segment3, Segment3]);
+        if (segments.length >= 2) {
+          const result = sumSegments(segments as [Segment3, Segment3]);
+          clearBoard();
+          segments.push(...result);
+        }
       });
     buttons.revertSumButton = p
       .createButton("revert addition order")
@@ -75,10 +78,13 @@ const sketch = (p: p5) => {
       )
       .attribute("disabled", "true")
       .mousePressed(() => {
-        if (segments.length >= 3)
-          segments = revertSegmentSum(
+        if (segments.length >= 3) {
+          const result = revertSegmentSum(
             segments as [Segment3, Segment3, Segment3],
           );
+          clearBoard();
+          segments.push(...result);
+        }
       });
     buttons.clearButton = p
       .createButton("clear")
@@ -137,11 +143,46 @@ const sketch = (p: p5) => {
       )
       .mousePressed(() => {
         clearBoard();
+
+        const screenLimits = {
+          left: -p.width / 2 + defaultXOffset,
+          right: p.width / 2 - defaultXOffset,
+          top: p.height / 2 - defaultYOffset * 2,
+          bottom: -p.height / 2 + defaultXOffset,
+        };
+
+        const topLeftLimit = new Vector3(
+          [screenLimits.left, screenLimits.top, 0],
+          [0, 0, 0],
+        );
+        const topRightLimit = new Vector3(
+          [screenLimits.right, screenLimits.top, 0],
+          [0, 0, 0],
+        );
+        const bottomLeftLimit = new Vector3(
+          [screenLimits.left, screenLimits.bottom, 0],
+          [0, 0, 0],
+        );
+        const bottomRightLimit = new Vector3(
+          [screenLimits.right, screenLimits.bottom, 0],
+          [0, 0, 0],
+        );
+
+        segments.push(
+          ...[
+            [topLeftLimit, topRightLimit] as Segment3,
+            [topLeftLimit, bottomLeftLimit] as Segment3,
+            [bottomLeftLimit, bottomRightLimit] as Segment3,
+            [bottomRightLimit, topRightLimit] as Segment3,
+          ],
+        );
+
         particle = new Particle(
           p,
           10,
           new Vector3([0, 0, 0]),
           new Vector3([1, 1, 0]),
+          segments,
         );
         state = "particles";
       });
@@ -149,6 +190,28 @@ const sketch = (p: p5) => {
 
   p.draw = () => {
     setupCartesian(p);
+
+    if (points.length === 4) {
+      segments.push([
+        new Vector3([points[0], points[1], 0]),
+        new Vector3([points[2], points[3], 0]),
+      ]);
+      points.splice(0, points.length);
+      if (state === "angles" && segments.length < 2) {
+        points.push(0, 0);
+      }
+    }
+    if (points.length === 2) {
+      p.push();
+      p.stroke("black").line(
+        points[0],
+        points[1],
+        p.mouseX - p.width / 2,
+        (p.mouseY - p.height / 2) * -1,
+      );
+      p.pop();
+    }
+
     handleUIState({
       buttons,
       p,
@@ -157,7 +220,6 @@ const sketch = (p: p5) => {
       collisionPoint,
       defaultXOffset,
       defaultYOffset,
-      points,
     });
 
     if (state === "particles") {

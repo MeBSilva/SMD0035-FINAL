@@ -1,5 +1,8 @@
+import { getLimits, type Segment3 } from "@/domain/Segment";
 import type { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
+
+type Entity = Segment3 | Particle;
 
 export class Particle {
   private hitbox: Vector3;
@@ -15,6 +18,7 @@ export class Particle {
     private radius: number,
     private position: Vector3,
     private velocity: Vector3,
+    private entities: Entity[],
   ) {
     this.hitbox = position;
     this.lastPosition = {
@@ -38,7 +42,10 @@ export class Particle {
     return this.top + this.radius;
   }
 
-  private AABBCollision(that: Particle) {
+  private AABBCollision(thata: Entity) {
+    const that: { left: number; right: number; top: number; bottom: number } =
+      thata instanceof Particle ? thata : getLimits(thata);
+
     if (
       this.right < that.left ||
       this.top < that.bottom ||
@@ -49,11 +56,12 @@ export class Particle {
     return true;
   }
 
-  public handleCollision(entities: unknown[]) {
-    for (const entity of entities) {
-      if (entity instanceof Particle) {
+  public handleCollision() {
+    for (const entity of this.entities) {
+      console.log("alá", entity);
+      if (Array.isArray(entity)) {
         if (this.AABBCollision(entity)) {
-          this.velocity.reflect([entity.position, entity.position]);
+          this.velocity.reflect(entity);
 
           return;
         }
@@ -72,7 +80,7 @@ export class Particle {
     this.hitbox.x += this.velocity.x;
     this.hitbox.y += this.velocity.y;
 
-    // this.handleCollision(this.gameState.entities);
+    this.handleCollision();
 
     this.position = this.hitbox;
   }

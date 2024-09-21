@@ -4,11 +4,11 @@ import {
   findThetaByCrossProduct,
   findThetaByDotProduct,
 } from "@/domain/findTheta";
-import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
+import type { Vector3 } from "@/domain/Vector";
 
 export const handleUIState = ({
   p,
@@ -18,7 +18,6 @@ export const handleUIState = ({
   defaultXOffset,
   defaultYOffset,
   collisionPoint,
-  points,
 }: {
   state: "angles" | "vectors" | "particles";
   collisionPoint: Vector3 | undefined;
@@ -27,39 +26,11 @@ export const handleUIState = ({
   buttons: Buttons;
   defaultXOffset: number;
   defaultYOffset: number;
-  points: number[];
 }) => {
-  if (state === "particles") {
-    handleParticleMode({ buttons, p, defaultYOffset, defaultXOffset });
-
-    return;
-  }
-
   p.push();
   p.stroke("black").line(-p.width / 2, 0, p.width / 2, 0);
   p.stroke("black").line(0, -p.height / 2, 0, p.height / 2);
   p.pop();
-
-  if (points.length === 4) {
-    segments.push([
-      new Vector3([points[0], points[1], 0]),
-      new Vector3([points[2], points[3], 0]),
-    ]);
-    points.splice(0, points.length);
-    if (state === "angles" && segments.length < 2) {
-      points.push(0, 0);
-    }
-  }
-  if (points.length === 2) {
-    p.push();
-    p.stroke("black").line(
-      points[0],
-      points[1],
-      p.mouseX - p.width / 2,
-      (p.mouseY - p.height / 2) * -1,
-    );
-    p.pop();
-  }
 
   if (segments.length === 2) {
     buttons.showSumButton.removeAttribute("disabled");
@@ -73,6 +44,10 @@ export const handleUIState = ({
     buttons.revertSumButton.removeAttribute("disabled");
   if (segments.length !== 3)
     buttons.revertSumButton.attribute("disabled", "true");
+
+  if (state === "particles") {
+    handleParticleMode({ buttons, p, defaultYOffset, defaultXOffset });
+  }
 
   if (state === "angles")
     handleAngleMode({
@@ -94,11 +69,15 @@ export const handleUIState = ({
     });
 
   for (let i = 0; i < segments.length; i++) {
-    const color: [number, number, number] =
-      i === 0 ? [200, 50, 50] : i === 1 ? [50, 50, 200] : [50, 200, 50];
     const [origin, destination] = segments[i];
-    destination.color = color;
-    drawArrow(p, origin, destination);
+    if (state === "particles") {
+      drawSegment(p, origin, destination);
+    } else {
+      const color: [number, number, number] =
+        i === 0 ? [200, 50, 50] : i === 1 ? [50, 50, 200] : [50, 200, 50];
+      destination.color = color;
+      drawArrow(p, origin, destination);
+    }
   }
 };
 
@@ -195,33 +174,4 @@ const handleParticleMode = ({
   buttons.angleModeButton.removeAttribute("disabled");
   buttons.particleModeButton.attribute("disabled", "true");
   buttons.vectorModeButton.removeAttribute("disabled");
-
-  const screenLimits = {
-    left: -p.width / 2 + defaultXOffset,
-    right: p.width / 2 - defaultXOffset,
-    top: p.height / 2 - defaultYOffset * 2,
-    bottom: -p.height / 2 + defaultXOffset,
-  };
-
-  const topLeftLimit = new Vector3(
-    [screenLimits.left, screenLimits.top, 0],
-    [0, 0, 0],
-  );
-  const topRightLimit = new Vector3(
-    [screenLimits.right, screenLimits.top, 0],
-    [0, 0, 0],
-  );
-  const bottomLeftLimit = new Vector3(
-    [screenLimits.left, screenLimits.bottom, 0],
-    [0, 0, 0],
-  );
-  const bottomRightLimit = new Vector3(
-    [screenLimits.right, screenLimits.bottom, 0],
-    [0, 0, 0],
-  );
-
-  drawSegment(p, topLeftLimit, topRightLimit);
-  drawSegment(p, topLeftLimit, bottomLeftLimit);
-  drawSegment(p, bottomLeftLimit, bottomRightLimit);
-  drawSegment(p, bottomRightLimit, topRightLimit);
 };
