@@ -1,5 +1,6 @@
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
+import type { Buttons } from "./UI/buttons";
 
 export const handleInputs = ({
   points,
@@ -10,12 +11,7 @@ export const handleInputs = ({
   vectorPairs: [Vector3, Vector3][];
   points: number[];
   p: p5;
-  buttons: {
-    showSumButton: p5.Element;
-    revertSumButton: p5.Element;
-    collisionButton: p5.Element;
-    clearButton: p5.Element;
-  };
+  buttons: Buttons;
 }) => {
   if (points.length === 4) {
     vectorPairs.push([

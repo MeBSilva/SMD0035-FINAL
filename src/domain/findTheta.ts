@@ -27,5 +27,7 @@ export const findPseudoThetaByDotProduct = (u: Vector3, v: Vector3) => {
 export const findPseudoThetaSquareMethod = (u: Vector3, v: Vector3) => {
   if (u.isNull() || v.isNull()) return 0;
 
-  return Math.abs(u.findPseudoAngleWithXAxis() - v.findPseudoAngleWithXAxis());
+  return Math.abs(
+    u.findPseudoAngleWithXAxis() - v.findPseudoAngleWithXAxis(),
+  ).toFixed(2);
 };

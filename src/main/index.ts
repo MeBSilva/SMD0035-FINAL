@@ -1,32 +1,22 @@
-import { Vector, Vector3 } from "@/domain/Vector";
+import { Vector3 } from "@/domain/Vector";
 import p5 from "p5";
 import { drawArrow } from "./drawArrow";
 import { setupCartesian } from "./setupCartesian";
 import { handleInputs } from "./handleInputs";
 import { checkForCollision } from "@/domain/checkCollision";
-import {
-  findPseudoThetaByDotProduct,
-  findPseudoThetaSquareMethod,
-  findThetaByCrossProduct,
-  findThetaByDotProduct,
-} from "@/domain/findTheta";
+import { handleUIState } from "./handleUIState";
+import type { Buttons } from "./UI/buttons";
 
 const sketch = (p: p5) => {
-  const vectorPairs: [Vector3, Vector3][] = [
-    // [new Vector3([0, 0, 0]), new Vector3([100, -0.0, 0])],
-    // [new Vector3([0, 0, 0]), new Vector3([100, 100, 0])],
-  ];
+  let state: "angles" | "vectors" = "vectors";
+
+  const vectorPairs: [Vector3, Vector3][] = [];
   const points: number[] = [];
 
   const defaultXOffset = 15;
   const defaultYOffset = 50;
 
-  const buttons: {
-    showSumButton: p5.Element;
-    revertSumButton: p5.Element;
-    collisionButton: p5.Element;
-    clearButton: p5.Element;
-  } = {} as typeof buttons;
+  const buttons: Buttons = {} as Buttons;
   let collisionPoint: Vector3 | undefined;
 
   const revertSum = () => {
@@ -98,6 +88,12 @@ const sketch = (p: p5) => {
     collisionPoint = undefined;
   };
 
+  const clearBoard = () => {
+    points.splice(0, points.length);
+    vectorPairs.splice(0, vectorPairs.length);
+    collisionPoint = undefined;
+  };
+
   const isMouseHittingNav = () => {
     if (
       p.mouseX >= defaultXOffset &&
@@ -106,6 +102,7 @@ const sketch = (p: p5) => {
       p.mouseY <= 30 + defaultYOffset
     )
       return true;
+    console.log("hm", p.mouseX);
     return false;
   };
 
@@ -156,52 +153,40 @@ const sketch = (p: p5) => {
           buttons.showSumButton.width,
         defaultYOffset,
       )
+      .mousePressed(clearBoard);
+    buttons.alterState = p
+      .createButton(
+        `change to ${state === "vectors" ? "angle mode" : "vector mode"}`,
+      )
+      .position(
+        defaultXOffset * 5 +
+          buttons.clearButton.width +
+          buttons.collisionButton.width +
+          buttons.revertSumButton.width +
+          buttons.showSumButton.width,
+        defaultYOffset,
+      )
       .mousePressed(() => {
-        vectorPairs.splice(0, vectorPairs.length);
-        collisionPoint = undefined;
+        clearBoard();
+        points.push(0, 0);
+        state = state === "vectors" ? "angles" : "vectors";
+        (buttons.alterState.elt as HTMLButtonElement).innerText =
+          `change to ${state === "vectors" ? "angle mode" : "vector mode"}`;
       });
   };
 
   p.draw = () => {
     setupCartesian(p);
-    handleInputs({ p, buttons, points, vectorPairs });
-    p.push();
-    if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
-    p.scale(1, -1);
-    p.textSize(15);
-    p.text(
-      `Possui colisão? ${!!collisionPoint}`,
-      -p.width / 2 + defaultXOffset,
-      -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
-    );
-    if (vectorPairs.length === 2) {
-      p.text(
-        `Theta (dot) = ${findThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 4 + defaultYOffset,
-      );
-      p.text(
-        `Theta (cross) = ${findThetaByCrossProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 5 + defaultYOffset,
-      );
-      p.text(
-        `Pseudo theta (dot) = ${findPseudoThetaByDotProduct(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 6 + defaultYOffset,
-      );
-      p.text(
-        `Pseudo theta (octant) = ${findPseudoThetaSquareMethod(vectorPairs[0][1], vectorPairs[1][1])}º`,
-        -p.width / 2 + defaultXOffset,
-        -p.height / 2 + buttons.collisionButton.height * 7 + defaultYOffset,
-      );
-    }
-    p.pop();
-    p.push();
-    p.rectMode("center");
-    p.fill(180, 180, 180, 0);
-    p.rect(0, 0, 200, 200);
-    p.pop();
+    handleUIState({
+      buttons,
+      p,
+      state,
+      vectorPairs,
+      collisionPoint,
+      defaultXOffset,
+      defaultYOffset,
+      points,
+    });
 
     for (let i = 0; i < vectorPairs.length; i++) {
       const color: [number, number, number] =
