@@ -1,7 +1,7 @@
 import type { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 
-export abstract class Particle {
+export class Particle {
   private hitbox: Vector3;
   public lastPosition: {
     left: number;
@@ -38,30 +38,28 @@ export abstract class Particle {
     return this.top + this.radius;
   }
 
-  // public handleCollision(entities: Entity[]) {
-  //   entities.forEach((entity) => {
-  //     if (this.collidesWith(entity)) {
-  //       if (entity instanceof Player) {
-  //         entity.takeDamage();
-  //         return;
-  //       }
-  //       if (entity instanceof Wall) {
-  //         if (this.wasAbove(entity)) {
-  //           this.hitbox.y = entity.top - this.height;
-  //           this.currentVelocity.vertical = ScreenUnit.Nil();
-  //         }
-  //         if (this.wasLeftOf(entity) || this.wasRightOf(entity))
-  //           this.currentVelocity.horizontal =
-  //             this.currentVelocity.horizontal.withNegatedSign();
+  private AABBCollision(that: Particle) {
+    if (
+      this.right < that.left ||
+      this.top < that.bottom ||
+      this.left > that.right ||
+      this.bottom > that.top
+    )
+      return false;
+    return true;
+  }
 
-  //         return;
-  //       }
-  //       if (entity !== this)
-  //         this.currentVelocity.horizontal =
-  //           this.currentVelocity.horizontal.withNegatedSign();
-  //     }
-  //   });
-  // }
+  public handleCollision(entities: unknown[]) {
+    for (const entity of entities) {
+      if (entity instanceof Particle) {
+        if (this.AABBCollision(entity)) {
+          this.velocity.reflect([entity.position, entity.position]);
+
+          return;
+        }
+      }
+    }
+  }
 
   public updateMovementState() {
     this.lastPosition = {
@@ -81,7 +79,7 @@ export abstract class Particle {
 
   public draw() {
     this.p.push();
-    this.p.circle(this.position.x, this.position.y, this.radius * 2);
+    this.p.rect(this.position.x, this.position.y, this.radius, this.radius);
     this.p.pop();
   }
 }

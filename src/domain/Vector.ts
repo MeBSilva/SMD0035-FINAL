@@ -66,9 +66,7 @@ export abstract class Vector {
     return this.minus(normal.times(normal.dot(this)));
   }
 
-  public reflect(normal: this): this {
-    return this.minus(normal.times(2).times(normal.dot(this)));
-  }
+  public abstract reflect(segment: [this, this]): this;
 }
 
 export class Vector3 extends Vector {
@@ -140,7 +138,15 @@ export class Vector3 extends Vector {
     return this.minus(normal.times(normal.dot(this)));
   }
 
-  public reflect(normal: this): this {
+  public reflect([A, B]: [Vector3, Vector3]): this {
+    const deltaX = B.x - A.x;
+    const deltaY = B.y - A.y;
+    const normal = new Vector3([deltaX, deltaY, 0])
+      .toUnitVector()
+      .rotate90() as this;
+    normal.x = normal.x + B.x;
+    normal.y = normal.y + B.y;
+
     return this.minus(normal.times(2).times(normal.dot(this)));
   }
 

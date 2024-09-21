@@ -4,10 +4,12 @@ import { setupCartesian } from "./setupCartesian";
 import { checkForCollision } from "@/domain/checkCollision";
 import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
+import { Particle } from "./actors/particle";
 
 const sketch = (p: p5) => {
   let state: "angles" | "vectors" | "particles" = "vectors";
 
+  let particle: Particle | undefined;
   const vectorPairs: [Vector3, Vector3][] = [];
   const points: number[] = [];
 
@@ -90,6 +92,7 @@ const sketch = (p: p5) => {
     points.splice(0, points.length);
     vectorPairs.splice(0, vectorPairs.length);
     collisionPoint = undefined;
+    particle = undefined;
   };
 
   const isMouseHittingNav = () => {
@@ -199,6 +202,12 @@ const sketch = (p: p5) => {
       )
       .mousePressed(() => {
         clearBoard();
+        particle = new Particle(
+          p,
+          10,
+          new Vector3([0, 0, 0]),
+          new Vector3([1, 1, 0]),
+        );
         state = "particles";
       });
   };
@@ -215,6 +224,11 @@ const sketch = (p: p5) => {
       defaultYOffset,
       points,
     });
+
+    if (state === "particles") {
+      particle?.updateMovementState();
+      particle?.draw();
+    }
   };
 };
 
