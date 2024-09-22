@@ -1,93 +1,73 @@
+import { AABB } from "@/domain/AABB";
 import { getLimits, type Segment3 } from "@/domain/Segment";
-import type { Vector3 } from "@/domain/Vector";
+import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
+import { drawArrow } from "../drawSegment";
 
 type Entity = Segment3 | Particle;
 
 export class Particle {
-  private hitbox: Vector3;
-  public lastPosition: {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-  };
+  private aabb: AABB;
 
   constructor(
     private readonly p: p5,
     private radius: number,
-    private position: Vector3,
+    private center: Vector3,
     private velocity: Vector3,
-    private entities: Entity[],
   ) {
-    this.hitbox = position;
-    this.lastPosition = {
-      bottom: this.bottom,
-      left: this.left,
-      right: this.right,
-      top: this.top,
-    };
+    this.aabb = new AABB([
+      new Vector3([center.x - radius, center.y - radius, 0]),
+      new Vector3([center.x + radius, center.y - radius, 0]),
+      new Vector3([center.x - radius, center.y + radius, 0]),
+      new Vector3([center.x + radius, center.y + radius, 0]),
+    ]);
   }
 
-  get left() {
-    return this.hitbox.x;
-  }
-  get right() {
-    return this.left + this.radius;
-  }
-  get top() {
-    return this.hitbox.y;
-  }
-  get bottom() {
-    return this.top + this.radius;
-  }
-
-  private AABBCollision(thata: Entity) {
-    const that: { left: number; right: number; top: number; bottom: number } =
-      thata instanceof Particle ? thata : getLimits(thata);
-
-    if (
-      this.right < that.left ||
-      this.top < that.bottom ||
-      this.left > that.right ||
-      this.bottom > that.top
-    )
-      return false;
-    return true;
-  }
-
-  public handleCollision() {
-    for (const entity of this.entities) {
-      console.log("alá", entity);
+  public handleCollision(entities: Entity[], callback?: () => void) {
+    for (const entity of entities) {
       if (Array.isArray(entity)) {
-        if (this.AABBCollision(entity)) {
-          this.velocity.reflect(entity);
+        const thatAabb = new AABB(entity);
+        if (this.aabb.collidesWith(thatAabb)) {
+          if (callback) callback();
 
-          return;
+          if (this.aabb.wasAbove(thatAabb)) this.aabb.correctWasAbove(thatAabb);
+          if (this.aabb.wasBelow(thatAabb)) this.aabb.correctWasBelow(thatAabb);
+          if (this.aabb.wasLeftOf(thatAabb))
+            this.aabb.correctWasLeftOf(thatAabb);
+          if (this.aabb.wasRightOf(thatAabb))
+            this.aabb.correctWasRightOf(thatAabb);
+
+          this.velocity = this.velocity.reflect(entity);
         }
       }
     }
   }
 
-  public updateMovementState() {
-    this.lastPosition = {
-      bottom: this.bottom,
-      left: this.left,
-      right: this.right,
-      top: this.top,
-    };
+  public updateMovementState(entities: Entity[], callback?: () => void) {
+    this.aabb.translate(new Vector3([this.velocity.x, this.velocity.y, 0]));
 
-    this.hitbox.x += this.velocity.x;
-    this.hitbox.y += this.velocity.y;
+    this.handleCollision(entities, callback);
 
-    this.handleCollision();
-
-    this.position = this.hitbox;
+    this.center = new Vector3([this.aabb.center.x, this.aabb.center.y, 0]);
   }
 
   public draw() {
+    const velocityArrow = this.velocity
+      .toUnitVector()
+      .scale(this.radius * 3)
+      .translate(this.center);
+
     this.p.push();
-    this.p.rect(this.position.x, this.position.y, this.radius, this.radius);
+    this.p.circle(this.center.x, this.center.y, this.radius * 2);
+    drawArrow(
+      this.p,
+      this.center,
+      new Vector3([velocityArrow.x, velocityArrow.y, 0], [0, 0, 0]),
+      true,
+    );
+    this.p.fill(0, 0, 0, 0);
+    this.p.rectMode("center");
+    this.p.rect(this.center.x, this.center.y, this.radius * 2, this.radius * 2);
     this.p.pop();
   }
 }

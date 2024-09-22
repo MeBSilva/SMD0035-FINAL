@@ -1,5 +1,5 @@
 import { Vector3 } from "@/domain/Vector";
-import p5 from "p5";
+import p5, { Vector } from "p5";
 import { setupCartesian } from "./setupCartesian";
 import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
@@ -15,7 +15,7 @@ import type { Segment3 } from "@/domain/Segment";
 const sketch = (p: p5) => {
   let state: "angles" | "vectors" | "particles" = "vectors";
 
-  let particle: Particle | undefined;
+  const particles: Particle[] = [];
   const segments: Segment3[] = [];
   const points: number[] = [];
 
@@ -25,11 +25,19 @@ const sketch = (p: p5) => {
   const buttons: Buttons = {} as Buttons;
   let collisionPoint: Vector3 | undefined;
 
+  const makeParticle = () =>
+    new Particle(
+      p,
+      10,
+      new Vector3([0, p.height / 2 - 140, 0]),
+      new Vector3([10, 10, 0]),
+    );
+
   const clearBoard = () => {
     points.splice(0, points.length);
     segments.splice(0, segments.length);
     collisionPoint = undefined;
-    particle = undefined;
+    particles.splice(0, particles.length);
   };
 
   p.mousePressed = (_) => {
@@ -38,6 +46,7 @@ const sketch = (p: p5) => {
       segments,
       defaultXOffset,
       defaultYOffset,
+      state,
     });
     points.push(...newPoints);
   };
@@ -176,14 +185,8 @@ const sketch = (p: p5) => {
             [bottomRightLimit, topRightLimit] as Segment3,
           ],
         );
-
-        particle = new Particle(
-          p,
-          10,
-          new Vector3([0, 0, 0]),
-          new Vector3([1, 1, 0]),
-          segments,
-        );
+        p.frameRate(30);
+        particles.push(makeParticle());
         state = "particles";
       });
   };
@@ -220,12 +223,8 @@ const sketch = (p: p5) => {
       collisionPoint,
       defaultXOffset,
       defaultYOffset,
+      particles,
     });
-
-    if (state === "particles") {
-      particle?.updateMovementState();
-      particle?.draw();
-    }
   };
 };
 

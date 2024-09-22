@@ -5,6 +5,7 @@ export const drawArrow = (
   p: p5,
   originVector: Vector3,
   destinationVector: Vector3,
+  hideText?: boolean,
 ) => {
   const deltaX = destinationVector.x - originVector.x;
   const deltaY = destinationVector.y - originVector.y;
@@ -25,13 +26,15 @@ export const drawArrow = (
     trianglePoint3.y + destinationVector.y,
   );
 
-  p.scale(1, -1);
-  p.text(`${originVector.values}`, originVector.x, originVector.y * -1);
-  p.text(
-    `${destinationVector.values}`,
-    destinationVector.x,
-    destinationVector.y * -1,
-  );
+  if (!hideText) {
+    p.scale(1, -1);
+    p.text(`${originVector.values}`, originVector.x, originVector.y * -1);
+    p.text(
+      `${destinationVector.values}`,
+      destinationVector.x,
+      destinationVector.y * -1,
+    );
+  }
   p.pop();
 };
 

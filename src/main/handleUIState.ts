@@ -9,6 +9,7 @@ import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
 import type { Vector3 } from "@/domain/Vector";
+import type { Particle } from "./actors/particle";
 
 export const handleUIState = ({
   p,
@@ -18,6 +19,7 @@ export const handleUIState = ({
   defaultXOffset,
   defaultYOffset,
   collisionPoint,
+  particles,
 }: {
   state: "angles" | "vectors" | "particles";
   collisionPoint: Vector3 | undefined;
@@ -26,6 +28,7 @@ export const handleUIState = ({
   buttons: Buttons;
   defaultXOffset: number;
   defaultYOffset: number;
+  particles: Particle[];
 }) => {
   p.push();
   p.stroke("black").line(-p.width / 2, 0, p.width / 2, 0);
@@ -46,7 +49,14 @@ export const handleUIState = ({
     buttons.revertSumButton.attribute("disabled", "true");
 
   if (state === "particles") {
-    handleParticleMode({ buttons, p, defaultYOffset, defaultXOffset });
+    handleParticleMode({
+      buttons,
+      particles,
+      segments,
+      defaultXOffset,
+      defaultYOffset,
+      p,
+    });
   }
 
   if (state === "angles")
@@ -161,17 +171,53 @@ const handleVectorMode = ({
 };
 
 const handleParticleMode = ({
-  p,
   buttons,
-  defaultYOffset,
+  particles,
+  segments,
   defaultXOffset,
+  defaultYOffset,
+  p,
 }: {
-  p: p5;
   buttons: Buttons;
-  defaultYOffset: number;
+  particles: Particle[];
+  segments: Segment3[];
+  p: p5;
   defaultXOffset: number;
+  defaultYOffset: number;
 }) => {
   buttons.angleModeButton.removeAttribute("disabled");
   buttons.particleModeButton.attribute("disabled", "true");
   buttons.vectorModeButton.removeAttribute("disabled");
+
+  for (const particle of particles) {
+    particle.updateMovementState(
+      segments,
+      // 	 () => {
+      //   const { bottom, left, right, top } = {
+      //     left: -p.width / 2 + defaultXOffset,
+      //     right: p.width / 2 - defaultXOffset,
+      //     top: p.height / 2 - defaultYOffset * 2,
+      //     bottom: -p.height / 2 + defaultXOffset,
+      //   };
+
+      //   segments.push([
+      //     new Vector3([
+      //       Math.random() * (right - left) + left,
+      //       Math.random() * (top - bottom) + bottom,
+      //       0,
+      //     ]),
+
+      //     new Vector3(
+      //       [
+      //         Math.random() * (right - left) + left,
+      //         Math.random() * (top - bottom) + bottom,
+      //         0,
+      //       ],
+      //       [0, 0, 0],
+      //     ),
+      //   ]);
+      // }
+    );
+    particle.draw();
+  }
 };

@@ -92,16 +92,18 @@ export const handleMousePress = ({
   segments,
   defaultXOffset,
   defaultYOffset,
+  state,
 }: {
   p: p5;
   segments: Segment3[];
   defaultXOffset: number;
   defaultYOffset: number;
+  state: "angles" | "vectors" | "particles";
 }): number[] => {
   if (
     p.mouseButton === p.LEFT &&
     !isMouseHittingNav({ defaultXOffset, defaultYOffset, p }) &&
-    segments.length < 2
+    (segments.length < 2 || state === "particles")
   )
     return [p.mouseX - p.width / 2, (p.mouseY - p.height / 2) * -1];
   return [];

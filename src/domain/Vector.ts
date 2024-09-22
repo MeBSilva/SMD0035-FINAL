@@ -31,13 +31,6 @@ export abstract class Vector {
 
   public abstract times(scalar: number): this;
 
-  public dot(that: this): number {
-    return this.values.reduce(
-      (accumulator, value, index) => accumulator + value * that.values[index],
-      0,
-    );
-  }
-
   public norm(): number {
     return Math.sqrt(
       this.values.reduce(
@@ -58,14 +51,6 @@ export abstract class Vector {
   }
 
   public abstract cross(that: this): this;
-
-  public projection(that: this): this {
-    return that.times(this.dot(that) / that.dot(that));
-  }
-
-  public slide(normal: this): this {
-    return this.minus(normal.times(normal.dot(this)));
-  }
 
   public abstract reflect(segment: [this, this]): this;
 }
@@ -131,6 +116,10 @@ export class Vector3 extends Vector {
     ]) as this;
   }
 
+  public dot(that: this): number {
+    return this.x * that.x + this.y * that.y + this.z * that.z;
+  }
+
   public projection(that: this): this {
     return that.times(this.dot(that) / that.dot(that));
   }
@@ -145,8 +134,6 @@ export class Vector3 extends Vector {
     const normal = new Vector3([deltaX, deltaY, 0])
       .toUnitVector()
       .rotate90() as this;
-    normal.x = normal.x + B.x;
-    normal.y = normal.y + B.y;
 
     return this.minus(normal.times(2).times(normal.dot(this)));
   }
