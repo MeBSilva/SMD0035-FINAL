@@ -1,10 +1,10 @@
 import { Vector3 } from "./Vector";
 
 export class AABB {
-  private min: Vector3;
-  private lastMin: Vector3;
-  private max: Vector3;
-  private lastMax: Vector3;
+  protected min: Vector3;
+  protected lastMin: Vector3;
+  protected max: Vector3;
+  protected lastMax: Vector3;
 
   constructor(vertices: Vector3[]) {
     if (vertices.length < 1) throw new Error("Empty aabb");

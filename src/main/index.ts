@@ -11,6 +11,11 @@ import {
   revertSegmentSum,
   sumSegments,
 } from "./calculations/vectors";
+import {
+  generateAABB,
+  generateCircle,
+  type Volume,
+} from "./calculations/volumes";
 
 const sketch = (p: p5) => {
   let state: AppState = "vectors";
@@ -18,6 +23,7 @@ const sketch = (p: p5) => {
   const particles: Particle[] = [];
   const segments: Segment3[] = [];
   const points: number[] = [];
+  const volumes: Volume[] = [];
 
   const defaultXOffset = 15;
   const defaultYOffset = 50;
@@ -38,6 +44,7 @@ const sketch = (p: p5) => {
     segments.splice(0, segments.length);
     collisionPoint = undefined;
     particles.splice(0, particles.length);
+    volumes.splice(0, volumes.length);
   };
 
   p.mousePressed = (_) => {
@@ -48,11 +55,11 @@ const sketch = (p: p5) => {
       defaultYOffset,
       state,
     });
-    if (state === "volumes")
+    if (state === "volumes" && newPoints.length > 0)
       particles.push(
         new Particle(
           p,
-          10,
+          0.5,
           new Vector3([newPoints[0], newPoints[1], 0]),
           new Vector3(),
         ),
@@ -219,7 +226,12 @@ const sketch = (p: p5) => {
       .createButton("create AABB")
       .position(defaultXOffset * 3, defaultYOffset)
       .mousePressed(() => {
-        clearBoard();
+        volumes.push(
+          generateAABB(
+            p,
+            particles.map((particle) => particle.center),
+          ),
+        );
       });
     buttons.createOBBFromPointsButton = p
       .createButton("create OBB")
@@ -239,7 +251,13 @@ const sketch = (p: p5) => {
         defaultYOffset,
       )
       .mousePressed(() => {
-        clearBoard();
+        volumes.push(
+          generateCircle(
+            p,
+            particles.map((particle) => particle.center),
+            100000,
+          ),
+        );
       });
   };
 
@@ -256,6 +274,7 @@ const sketch = (p: p5) => {
       defaultYOffset,
       particles,
       points,
+      volumes,
     });
   };
 };

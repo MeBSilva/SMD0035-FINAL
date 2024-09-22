@@ -12,7 +12,7 @@ export class Particle {
   constructor(
     private readonly p: p5,
     private radius: number,
-    private center: Vector3,
+    public center: Vector3,
     private velocity: Vector3,
   ) {
     this.aabb = new AABB([
@@ -65,9 +65,9 @@ export class Particle {
       new Vector3([velocityArrow.x, velocityArrow.y, 0], [0, 0, 0]),
       true,
     );
-    this.p.fill(0, 0, 0, 0);
-    this.p.rectMode("center");
-    this.p.rect(this.center.x, this.center.y, this.radius * 2, this.radius * 2);
+    // this.p.fill(0, 0, 0, 0);
+    // this.p.rectMode("center");
+    // this.p.rect(this.center.x, this.center.y, this.radius * 2, this.radius * 2);
     this.p.pop();
   }
 }

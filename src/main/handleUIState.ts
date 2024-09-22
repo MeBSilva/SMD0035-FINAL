@@ -11,8 +11,7 @@ import type { Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
 import type { Particle } from "./actors/particle";
 import type { AppState } from "./utils";
-
-const handlePoints = () => {};
+import type { Volume } from "./calculations/volumes";
 
 export const handleUIState = ({
   p,
@@ -24,6 +23,7 @@ export const handleUIState = ({
   collisionPoint,
   particles,
   points,
+  volumes,
 }: {
   state: AppState;
   collisionPoint: Vector3 | undefined;
@@ -33,6 +33,7 @@ export const handleUIState = ({
   defaultXOffset: number;
   defaultYOffset: number;
   particles: Particle[];
+  volumes: Volume[];
   points: number[];
 }) => {
   p.push();
@@ -115,6 +116,7 @@ export const handleUIState = ({
       segments,
       defaultXOffset,
       defaultYOffset,
+      volumes,
       p,
     });
   else {
@@ -279,9 +281,11 @@ const handleVolumeMode = ({
   defaultXOffset,
   defaultYOffset,
   p,
+  volumes,
 }: {
   buttons: Buttons;
   particles: Particle[];
+  volumes: Volume[];
   segments: Segment3[];
   p: p5;
   defaultXOffset: number;
@@ -301,7 +305,9 @@ const handleVolumeMode = ({
   buttons.createCircleFromPointsButton.removeAttribute("hidden");
 
   for (const particle of particles) {
-    particle.updateMovementState(segments);
     particle.draw();
+  }
+  for (const volume of volumes) {
+    volume.draw();
   }
 };
