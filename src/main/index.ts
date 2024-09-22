@@ -4,16 +4,16 @@ import { setupCartesian } from "./setupCartesian";
 import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
 import { Particle } from "./actors/particle";
+import { type AppState, handleMousePress } from "./utils";
+import type { Segment3 } from "@/domain/Segment";
 import {
   handleCollision,
-  handleMousePress,
   revertSegmentSum,
   sumSegments,
-} from "./utils";
-import type { Segment3 } from "@/domain/Segment";
+} from "./calculations/vectors";
 
 const sketch = (p: p5) => {
-  let state: "angles" | "vectors" | "particles" = "vectors";
+  let state: AppState = "vectors";
 
   const particles: Particle[] = [];
   const segments: Segment3[] = [];
@@ -48,7 +48,16 @@ const sketch = (p: p5) => {
       defaultYOffset,
       state,
     });
-    points.push(...newPoints);
+    if (state === "volumes")
+      particles.push(
+        new Particle(
+          p,
+          10,
+          new Vector3([newPoints[0], newPoints[1], 0]),
+          new Vector3(),
+        ),
+      );
+    else points.push(...newPoints);
   };
 
   p.setup = () => {
@@ -185,35 +194,57 @@ const sketch = (p: p5) => {
             [bottomRightLimit, topRightLimit] as Segment3,
           ],
         );
-        p.frameRate(30);
+
         particles.push(makeParticle());
         state = "particles";
+      });
+    buttons.volumeModeButton = p
+      .createButton("change to volume mode")
+      .position(
+        defaultXOffset * 8 +
+          buttons.clearButton.width +
+          buttons.collisionButton.width +
+          buttons.revertSumButton.width +
+          buttons.vectorModeButton.width +
+          buttons.angleModeButton.width +
+          buttons.particleModeButton.width +
+          buttons.showSumButton.width,
+        defaultYOffset,
+      )
+      .mousePressed(() => {
+        clearBoard();
+        state = "volumes";
+      });
+    buttons.createAABBFromPointsButton = p
+      .createButton("create AABB")
+      .position(defaultXOffset * 3, defaultYOffset)
+      .mousePressed(() => {
+        clearBoard();
+      });
+    buttons.createOBBFromPointsButton = p
+      .createButton("create OBB")
+      .position(
+        defaultXOffset * 4 + buttons.createAABBFromPointsButton.width,
+        defaultYOffset,
+      )
+      .mousePressed(() => {
+        clearBoard();
+      });
+    buttons.createCircleFromPointsButton = p
+      .createButton("create circle")
+      .position(
+        defaultXOffset * 5 +
+          buttons.createAABBFromPointsButton.width +
+          buttons.createOBBFromPointsButton.width,
+        defaultYOffset,
+      )
+      .mousePressed(() => {
+        clearBoard();
       });
   };
 
   p.draw = () => {
     setupCartesian(p);
-
-    if (points.length === 4) {
-      segments.push([
-        new Vector3([points[0], points[1], 0]),
-        new Vector3([points[2], points[3], 0]),
-      ]);
-      points.splice(0, points.length);
-      if (state === "angles" && segments.length < 2) {
-        points.push(0, 0);
-      }
-    }
-    if (points.length === 2) {
-      p.push();
-      p.stroke("black").line(
-        points[0],
-        points[1],
-        p.mouseX - p.width / 2,
-        (p.mouseY - p.height / 2) * -1,
-      );
-      p.pop();
-    }
 
     handleUIState({
       buttons,
@@ -224,6 +255,7 @@ const sketch = (p: p5) => {
       defaultXOffset,
       defaultYOffset,
       particles,
+      points,
     });
   };
 };

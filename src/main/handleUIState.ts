@@ -8,8 +8,11 @@ import type p5 from "p5";
 import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
-import type { Vector3 } from "@/domain/Vector";
+import { Vector3 } from "@/domain/Vector";
 import type { Particle } from "./actors/particle";
+import type { AppState } from "./utils";
+
+const handlePoints = () => {};
 
 export const handleUIState = ({
   p,
@@ -20,8 +23,9 @@ export const handleUIState = ({
   defaultYOffset,
   collisionPoint,
   particles,
+  points,
 }: {
-  state: "angles" | "vectors" | "particles";
+  state: AppState;
   collisionPoint: Vector3 | undefined;
   segments: Segment3[];
   p: p5;
@@ -29,24 +33,50 @@ export const handleUIState = ({
   defaultXOffset: number;
   defaultYOffset: number;
   particles: Particle[];
+  points: number[];
 }) => {
   p.push();
   p.stroke("black").line(-p.width / 2, 0, p.width / 2, 0);
   p.stroke("black").line(0, -p.height / 2, 0, p.height / 2);
   p.pop();
 
-  if (segments.length === 2) {
-    buttons.showSumButton.removeAttribute("disabled");
-    buttons.collisionButton.removeAttribute("disabled");
+  if (state === "vectors" || state === "angles") {
+    if (segments.length === 2) {
+      buttons.showSumButton.removeAttribute("disabled");
+      buttons.collisionButton.removeAttribute("disabled");
+    }
+    if (segments.length !== 2) {
+      buttons.showSumButton.attribute("disabled", "true");
+      buttons.collisionButton.attribute("disabled", "true");
+    }
+    if (segments.length === 3)
+      buttons.revertSumButton.removeAttribute("disabled");
+    if (segments.length !== 3)
+      buttons.revertSumButton.attribute("disabled", "true");
   }
-  if (segments.length !== 2) {
-    buttons.showSumButton.attribute("disabled", "true");
-    buttons.collisionButton.attribute("disabled", "true");
+
+  if (state !== "volumes") {
+    if (points.length === 4) {
+      segments.push([
+        new Vector3([points[0], points[1], 0]),
+        new Vector3([points[2], points[3], 0]),
+      ]);
+      points.splice(0, points.length);
+      if (state === "angles" && segments.length < 2) {
+        points.push(0, 0);
+      }
+    }
+    if (points.length === 2) {
+      p.push();
+      p.stroke("black").line(
+        points[0],
+        points[1],
+        p.mouseX - p.width / 2,
+        (p.mouseY - p.height / 2) * -1,
+      );
+      p.pop();
+    }
   }
-  if (segments.length === 3)
-    buttons.revertSumButton.removeAttribute("disabled");
-  if (segments.length !== 3)
-    buttons.revertSumButton.attribute("disabled", "true");
 
   if (state === "particles") {
     handleParticleMode({
@@ -78,6 +108,25 @@ export const handleUIState = ({
       p,
     });
 
+  if (state === "volumes")
+    handleVolumeMode({
+      buttons,
+      particles,
+      segments,
+      defaultXOffset,
+      defaultYOffset,
+      p,
+    });
+  else {
+    buttons.createAABBFromPointsButton.attribute("hidden", "true");
+    buttons.createOBBFromPointsButton.attribute("hidden", "true");
+    buttons.createCircleFromPointsButton.attribute("hidden", "true");
+
+    buttons.collisionButton.removeAttribute("hidden");
+    buttons.showSumButton.removeAttribute("hidden");
+    buttons.revertSumButton.removeAttribute("hidden");
+  }
+
   for (let i = 0; i < segments.length; i++) {
     const [origin, destination] = segments[i];
     if (state === "particles") {
@@ -108,6 +157,7 @@ const handleAngleMode = ({
   buttons.angleModeButton.attribute("disabled", "true");
   buttons.particleModeButton.removeAttribute("disabled");
   buttons.vectorModeButton.removeAttribute("disabled");
+  buttons.volumeModeButton.removeAttribute("disabled");
   if (segments.length === 2) {
     p.push();
     p.scale(1, -1);
@@ -157,6 +207,7 @@ const handleVectorMode = ({
   buttons.angleModeButton.removeAttribute("disabled");
   buttons.particleModeButton.removeAttribute("disabled");
   buttons.vectorModeButton.attribute("disabled", "true");
+  buttons.volumeModeButton.removeAttribute("disabled");
 
   p.push();
   if (collisionPoint) p.circle(collisionPoint.x, collisionPoint.y, 10);
@@ -188,36 +239,69 @@ const handleParticleMode = ({
   buttons.angleModeButton.removeAttribute("disabled");
   buttons.particleModeButton.attribute("disabled", "true");
   buttons.vectorModeButton.removeAttribute("disabled");
+  buttons.volumeModeButton.removeAttribute("disabled");
 
   for (const particle of particles) {
-    particle.updateMovementState(
-      segments,
-      // 	 () => {
-      //   const { bottom, left, right, top } = {
-      //     left: -p.width / 2 + defaultXOffset,
-      //     right: p.width / 2 - defaultXOffset,
-      //     top: p.height / 2 - defaultYOffset * 2,
-      //     bottom: -p.height / 2 + defaultXOffset,
-      //   };
+    particle.updateMovementState(segments, () => {
+      if (segments.length > 15) return;
+      const { bottom, left, right, top } = {
+        left: -p.width / 2 + defaultXOffset,
+        right: p.width / 2 - defaultXOffset,
+        top: p.height / 2 - defaultYOffset * 2,
+        bottom: -p.height / 2 + defaultXOffset,
+      };
 
-      //   segments.push([
-      //     new Vector3([
-      //       Math.random() * (right - left) + left,
-      //       Math.random() * (top - bottom) + bottom,
-      //       0,
-      //     ]),
+      segments.push([
+        new Vector3([
+          Math.random() * (right - left) + left,
+          Math.random() * (top - bottom) + bottom,
+          0,
+        ]),
 
-      //     new Vector3(
-      //       [
-      //         Math.random() * (right - left) + left,
-      //         Math.random() * (top - bottom) + bottom,
-      //         0,
-      //       ],
-      //       [0, 0, 0],
-      //     ),
-      //   ]);
-      // }
-    );
+        new Vector3(
+          [
+            Math.random() * (right - left) + left,
+            Math.random() * (top - bottom) + bottom,
+            0,
+          ],
+          [0, 0, 0],
+        ),
+      ]);
+    });
+    particle.draw();
+  }
+};
+
+const handleVolumeMode = ({
+  buttons,
+  particles,
+  segments,
+  defaultXOffset,
+  defaultYOffset,
+  p,
+}: {
+  buttons: Buttons;
+  particles: Particle[];
+  segments: Segment3[];
+  p: p5;
+  defaultXOffset: number;
+  defaultYOffset: number;
+}) => {
+  buttons.angleModeButton.removeAttribute("disabled");
+  buttons.particleModeButton.removeAttribute("disabled");
+  buttons.vectorModeButton.removeAttribute("disabled");
+  buttons.volumeModeButton.attribute("disabled", "true");
+
+  buttons.collisionButton.attribute("hidden", "true");
+  buttons.showSumButton.attribute("hidden", "true");
+  buttons.revertSumButton.attribute("hidden", "true");
+
+  buttons.createAABBFromPointsButton.removeAttribute("hidden");
+  buttons.createOBBFromPointsButton.removeAttribute("hidden");
+  buttons.createCircleFromPointsButton.removeAttribute("hidden");
+
+  for (const particle of particles) {
+    particle.updateMovementState(segments);
     particle.draw();
   }
 };

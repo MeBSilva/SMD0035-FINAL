@@ -8,4 +8,8 @@ export type Buttons = {
   vectorModeButton: p5.Element;
   angleModeButton: p5.Element;
   particleModeButton: p5.Element;
+  volumeModeButton: p5.Element;
+  createAABBFromPointsButton: p5.Element;
+  createOBBFromPointsButton: p5.Element;
+  createCircleFromPointsButton: p5.Element;
 };
