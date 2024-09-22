@@ -13,6 +13,7 @@ import {
 } from "./calculations/vectors";
 import {
   generateAABB,
+  generateOBB,
   generateCircle,
   type Volume,
 } from "./calculations/volumes";
@@ -240,7 +241,12 @@ const sketch = (p: p5) => {
         defaultYOffset,
       )
       .mousePressed(() => {
-        clearBoard();
+        volumes.push(
+          generateOBB(
+            p,
+            particles.map((particle) => particle.center),
+          ),
+        );
       });
     buttons.createCircleFromPointsButton = p
       .createButton("create circle")
