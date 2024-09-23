@@ -10,7 +10,7 @@ import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
 import type { Particle } from "./actors/particle";
-import type { AppState } from "./utils";
+import type { AppState, VolumeSelectionMode } from "./utils";
 import type { Volume } from "./calculations/volumes";
 
 export const handleUIState = ({
@@ -24,8 +24,10 @@ export const handleUIState = ({
   particles,
   points,
   volumes,
+  selectionMode,
 }: {
   state: AppState;
+  selectionMode: VolumeSelectionMode;
   collisionPoint: Vector3 | undefined;
   segments: Segment3[];
   p: p5;
@@ -113,17 +115,16 @@ export const handleUIState = ({
     handleVolumeMode({
       buttons,
       particles,
-      segments,
-      defaultXOffset,
-      defaultYOffset,
       volumes,
-      p,
+      selectionMode,
     });
   else {
     buttons.createAABBFromPointsButton.attribute("hidden", "true");
     buttons.createOBBFromPointsButton.attribute("hidden", "true");
     buttons.createCircleFromPointsButton.attribute("hidden", "true");
     buttons.generateVertexCloudButton.attribute("hidden", "true");
+    buttons.selectionModeButton.attribute("hidden", "true");
+    buttons.createVertexModeButton.attribute("hidden", "true");
 
     buttons.collisionButton.removeAttribute("hidden");
     buttons.showSumButton.removeAttribute("hidden");
@@ -278,19 +279,13 @@ const handleParticleMode = ({
 const handleVolumeMode = ({
   buttons,
   particles,
-  segments,
-  defaultXOffset,
-  defaultYOffset,
-  p,
+  selectionMode,
   volumes,
 }: {
   buttons: Buttons;
   particles: Particle[];
   volumes: Volume[];
-  segments: Segment3[];
-  p: p5;
-  defaultXOffset: number;
-  defaultYOffset: number;
+  selectionMode: VolumeSelectionMode;
 }) => {
   buttons.angleModeButton.removeAttribute("disabled");
   buttons.particleModeButton.removeAttribute("disabled");
@@ -305,6 +300,16 @@ const handleVolumeMode = ({
   buttons.createOBBFromPointsButton.removeAttribute("hidden");
   buttons.createCircleFromPointsButton.removeAttribute("hidden");
   buttons.generateVertexCloudButton.removeAttribute("hidden");
+  buttons.selectionModeButton.removeAttribute("hidden");
+  buttons.createVertexModeButton.removeAttribute("hidden");
+
+  if (selectionMode === "select volume") {
+    buttons.selectionModeButton.attribute("disabled", "true");
+    buttons.createVertexModeButton.removeAttribute("disabled");
+  } else {
+    buttons.selectionModeButton.removeAttribute("disabled");
+    buttons.createVertexModeButton.attribute("disabled", "true");
+  }
 
   for (const particle of particles) {
     particle.draw();

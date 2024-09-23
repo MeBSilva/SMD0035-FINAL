@@ -2,8 +2,10 @@ import { AABB } from "@/domain/AABB";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 
-export type Volume = { draw: () => void };
+export type Volume = { draw: () => void; changeState: () => void };
 class DrawableAABB extends AABB implements Volume {
+  private isSelected = false;
+
   constructor(
     private readonly p: p5,
     vertices: Vector3[],
@@ -11,9 +13,14 @@ class DrawableAABB extends AABB implements Volume {
     super(vertices);
   }
 
+  public changeState() {
+    this.isSelected = !this.isSelected;
+  }
+
   public draw() {
     this.p.push();
     this.p.fill(0, 0, 0, 0);
+    if (this.isSelected) this.p.fill("green");
     this.p.rect(
       this.min.x,
       this.min.y,
@@ -26,6 +33,7 @@ class DrawableAABB extends AABB implements Volume {
 class DrawableCircleCollision implements Volume {
   private center: Vector3;
   private radius: number;
+  private isSelected = false;
 
   constructor(
     private readonly p: p5,
@@ -68,6 +76,10 @@ class DrawableCircleCollision implements Volume {
 
     this.center = center;
     this.radius = radius;
+  }
+
+  public changeState() {
+    this.isSelected = !this.isSelected;
   }
 
   public draw() {
