@@ -22,7 +22,7 @@ const isMouseHittingNav = ({
   return false;
 };
 
-export type AppState = "angles" | "vectors" | "particles" | "volumes";
+export type AppState = "angles" | "vectors" | "particles" | "volumes" | "points_in_volume";
 
 export const handleMousePress = ({
   p,

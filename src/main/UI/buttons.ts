@@ -13,4 +13,5 @@ export type Buttons = {
   createOBBFromPointsButton: p5.Element;
   createCircleFromPointsButton: p5.Element;
   generateVertexCloudButton: p5.Element;
+  verifyPointInVolume: p5.Element;
 };

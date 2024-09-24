@@ -56,7 +56,7 @@ const sketch = (p: p5) => {
       defaultYOffset,
       state,
     });
-    if (state === "volumes" && newPoints.length > 0)
+    if (state === "volumes" && newPoints.length > 0) {
       particles.push(
         new Particle(
           p,
@@ -64,8 +64,29 @@ const sketch = (p: p5) => {
           new Vector3([newPoints[0], newPoints[1], 0]),
           new Vector3(),
         ),
-      );
-    else points.push(...newPoints);
+      );} else {if (state === "points_in_volume" && newPoints.length > 0) {
+                let point = new Vector3([newPoints[0], newPoints[1], 0])
+                let color: [number, number, number] = [0, 0, 0]
+                for (const env of volumes) {
+                  if (env.containsPoint(point)) {
+                    color = [0,255,0];
+                  } else {
+                    color = [255, 0, 0]
+                  }
+                } 
+                  particles.push(
+                    new Particle(
+                      p,
+                      10,
+                      point,
+                      new Vector3(),
+                      color,
+                    ),
+                  );
+                } else {
+                points.push(...newPoints);
+                }
+            }
   };
 
   p.setup = () => {
@@ -264,6 +285,15 @@ const sketch = (p: p5) => {
             100000,
           ),
         );
+      });
+    buttons.verifyPointInVolume = p
+      .createButton("verify point in volume")
+      .position(
+        defaultXOffset,
+        defaultYOffset * 2 + buttons.createAABBFromPointsButton.height,
+      )
+      .mousePressed(() => {
+        state = "points_in_volume";
       });
     buttons.generateVertexCloudButton = p
       .createButton("create cloud")

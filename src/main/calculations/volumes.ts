@@ -3,7 +3,7 @@ import { OBB } from "@/domain/OBB";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 
-export type Volume = { draw: () => void };
+export type Volume = { draw: () => void; containsPoint: (point: Vector3) => boolean };
 class DrawableAABB extends AABB implements Volume {
   constructor(
     private readonly p: p5,
@@ -22,6 +22,10 @@ class DrawableAABB extends AABB implements Volume {
       this.max.y - this.min.y,
     );
     this.p.pop();
+  }
+
+  public containsPoint(point: Vector3){
+    return true;
   }
 }
 class DrawableCircleCollision implements Volume {
@@ -77,6 +81,10 @@ class DrawableCircleCollision implements Volume {
     this.p.circle(this.center.x, this.center.y, this.radius * 2);
     this.p.pop();
   }
+
+  public containsPoint(point: Vector3){
+    return point.minus(this.center).norm() < this.radius;
+  }
 }
 class DrawableOBB extends OBB implements Volume {
   constructor(
@@ -119,6 +127,10 @@ class DrawableOBB extends OBB implements Volume {
       this.center.minus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).y
     )
     this.p.pop();
+  }
+
+  public containsPoint(point: Vector3){
+    return true;
   }
 }
 

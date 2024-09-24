@@ -109,6 +109,17 @@ export const handleUIState = ({
       p,
     });
 
+  if (state === "points_in_volume")
+    handlePointsInVolumeMode({
+      buttons,
+      particles,
+      segments,
+      defaultXOffset,
+      defaultYOffset,
+      volumes,
+      p,
+    });
+
   if (state === "volumes")
     handleVolumeMode({
       buttons,
@@ -124,6 +135,7 @@ export const handleUIState = ({
     buttons.createOBBFromPointsButton.attribute("hidden", "true");
     buttons.createCircleFromPointsButton.attribute("hidden", "true");
     buttons.generateVertexCloudButton.attribute("hidden", "true");
+    buttons.verifyPointInVolume.attribute("hidden", "true");
 
     buttons.collisionButton.removeAttribute("hidden");
     buttons.showSumButton.removeAttribute("hidden");
@@ -275,6 +287,46 @@ const handleParticleMode = ({
   }
 };
 
+const handlePointsInVolumeMode = ({
+  buttons,
+  particles,
+  segments,
+  defaultXOffset,
+  defaultYOffset,
+  p,
+  volumes,
+}: {
+  buttons: Buttons;
+  particles: Particle[];
+  volumes: Volume[];
+  segments: Segment3[];
+  p: p5;
+  defaultXOffset: number;
+  defaultYOffset: number;
+}) => {
+  buttons.angleModeButton.removeAttribute("disabled");
+  buttons.particleModeButton.removeAttribute("disabled");
+  buttons.vectorModeButton.removeAttribute("disabled");
+  buttons.volumeModeButton.removeAttribute("disabled");
+
+  buttons.collisionButton.attribute("hidden", "true");
+  buttons.showSumButton.attribute("hidden", "true");
+  buttons.revertSumButton.attribute("hidden", "true");
+
+  buttons.createAABBFromPointsButton.removeAttribute("hidden");
+  buttons.createOBBFromPointsButton.removeAttribute("hidden");
+  buttons.createCircleFromPointsButton.removeAttribute("hidden");
+  buttons.generateVertexCloudButton.removeAttribute("hidden");
+  buttons.verifyPointInVolume.removeAttribute("hidden");
+
+  for (const particle of particles) {
+    particle.draw();
+  }
+  for (const volume of volumes) {
+    volume.draw();
+  }
+};
+
 const handleVolumeMode = ({
   buttons,
   particles,
@@ -305,6 +357,7 @@ const handleVolumeMode = ({
   buttons.createOBBFromPointsButton.removeAttribute("hidden");
   buttons.createCircleFromPointsButton.removeAttribute("hidden");
   buttons.generateVertexCloudButton.removeAttribute("hidden");
+  buttons.verifyPointInVolume.removeAttribute("hidden");
 
   for (const particle of particles) {
     particle.draw();

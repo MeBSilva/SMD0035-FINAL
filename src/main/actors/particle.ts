@@ -3,17 +3,20 @@ import { getLimits, type Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import { drawArrow } from "../drawSegment";
+import { Color } from "p5";
 
 type Entity = Segment3 | Particle;
 
 export class Particle {
   private aabb: AABB;
+  public color: [number, number, number];
 
   constructor(
     private readonly p: p5,
     private radius: number,
     public center: Vector3,
-    private velocity: Vector3,
+    private velocity: Vector3, 
+    color?: [number, number, number]
   ) {
     this.aabb = new AABB([
       new Vector3([center.x - radius, center.y - radius, 0]),
@@ -21,6 +24,11 @@ export class Particle {
       new Vector3([center.x - radius, center.y + radius, 0]),
       new Vector3([center.x + radius, center.y + radius, 0]),
     ]);
+    this.color = color ?? [
+      255,
+      255,
+      255,
+    ];
   }
 
   public handleCollision(entities: Entity[], callback?: () => void) {
@@ -58,6 +66,7 @@ export class Particle {
       .translate(this.center);
 
     this.p.push();
+    this.p.fill(this.color)
     this.p.circle(this.center.x, this.center.y, this.radius * 2);
     drawArrow(
       this.p,
