@@ -289,8 +289,8 @@ const sketch = (p: p5) => {
                 p,
                 10,
                 new Vector3([
-                  Math.random() * (right - left) + left,
-                  Math.random() * (top - bottom) + bottom,
+                  Math.random() * (right/2 - left/2) + left/2,
+                  Math.random() * (top/2 - bottom/2) + bottom/2,
                   0,
                 ]),
                 new Vector3(),
