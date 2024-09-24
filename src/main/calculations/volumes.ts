@@ -1,4 +1,5 @@
 import { AABB } from "@/domain/AABB";
+import { OBB } from "@/domain/OBB";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 
@@ -89,7 +90,53 @@ class DrawableCircleCollision implements Volume {
     this.p.pop();
   }
 }
+class DrawableOBB extends OBB implements Volume {
+  constructor(
+    private readonly p: p5,
+    vertices: Vector3[],
+  ) {
+    super(vertices);
+  }
 
+  public draw() {
+    this.p.push();
+    this.p.fill(0, 0, 0, 0);
+    this.p.circle(
+      this.center.x,
+      this.center.y,
+      5
+    );
+    this.p.line(
+      this.center.plus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).x,
+      this.center.plus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).y,
+      this.center.plus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).x,
+      this.center.plus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).y
+    )
+    this.p.line(
+      this.center.minus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).x,
+      this.center.minus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).y,
+      this.center.minus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).x,
+      this.center.minus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).y
+    )
+    this.p.line(
+      this.center.plus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).x,
+      this.center.plus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).y,
+      this.center.plus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).x,
+      this.center.plus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).y
+    )
+    this.p.line(
+      this.center.minus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).x,
+      this.center.minus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).y,
+      this.center.minus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).x,
+      this.center.minus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).y
+    )
+    this.p.pop();
+  }
+}
+
+
+export const generateOBB = (p: p5, points: Vector3[]) =>
+    new DrawableOBB(p, points)
 export const generateAABB = (p: p5, points: Vector3[]) =>
   new DrawableAABB(p, points);
 export const generateCircle = (p: p5, points: Vector3[], k?: number) =>
