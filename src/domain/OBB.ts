@@ -3,13 +3,12 @@ import { AABB } from "./AABB"
 
 export class OBB {
   protected center: Vector3;
-  protected area = 0;
+  protected quarter_area = Infinity;
   protected e: Vector3;
   protected maxu: Vector3;
   protected minu: Vector3;
   protected u: Vector3;
   protected v: Vector3;
-  protected aabb: AABB;
 
   constructor(vertices: Vector3[]) {
     if (vertices.length < 1) throw new Error("Empty obb");
@@ -23,7 +22,17 @@ export class OBB {
       let [min_v, max_v] = this.projetar(vertices, current_v);
 
       let extents = new Vector3([(max_u - min_u)/2, (max_v - min_v)/2, 0])
-      let center = new Vector3([(max_u + min_u)/2, (max_v + min_v)/2, 0]) // TODO
+      let current_quarter_area = extents.x * extents.y;
+
+      if (current_quarter_area < this.quarter_area) {
+        let u_center = current_u.times((max_u + min_u)/2);
+        let v_center = current_v.times((max_v + min_v)/2);
+        this.center = u_center.plus(v_center);
+        this.quarter_area = current_quarter_area;
+        this.e = extents;
+        this.u = current_u;
+        this.v = current_v;
+      }
     }
   }
 
@@ -32,9 +41,15 @@ export class OBB {
     let max_p = - Infinity;
 
     for (const point of points) {
-      let proj = point.projection(eixo).norm();
-      min_p = Math.min(proj, min_p);
-      max_p = Math.max(proj, max_p);
+      let proj = point.projection(eixo);
+      let coord;
+      if (proj.x * eixo.x > 0) {
+        coord = proj.norm();
+      } else {
+        coord = - proj.norm();
+      }
+      min_p = Math.min(coord, min_p);
+      max_p = Math.max(coord, max_p);
     }
 
     return [min_p, max_p];

@@ -89,12 +89,35 @@ class DrawableOBB extends OBB implements Volume {
   public draw() {
     this.p.push();
     this.p.fill(0, 0, 0, 0);
-    this.p.line(
-      this.center.plus(this.u.times(this.e.norm())).x,
-      this.center.plus(this.u.times(this.e.norm())).y,
-      this.center.minus(this.u.times(this.e.norm())).x,
-      this.center.minus(this.u.times(this.e.norm())).y,
+    this.p.circle(
+      this.center.x,
+      this.center.y,
+      5
     );
+    this.p.line(
+      this.center.plus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).x,
+      this.center.plus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).y,
+      this.center.plus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).x,
+      this.center.plus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).y
+    )
+    this.p.line(
+      this.center.minus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).x,
+      this.center.minus(this.v.times(this.e.y)).minus(this.u.times(this.e.x)).y,
+      this.center.minus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).x,
+      this.center.minus(this.v.times(this.e.y)).plus(this.u.times(this.e.x)).y
+    )
+    this.p.line(
+      this.center.plus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).x,
+      this.center.plus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).y,
+      this.center.plus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).x,
+      this.center.plus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).y
+    )
+    this.p.line(
+      this.center.minus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).x,
+      this.center.minus(this.u.times(this.e.x)).minus(this.v.times(this.e.y)).y,
+      this.center.minus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).x,
+      this.center.minus(this.u.times(this.e.x)).plus(this.v.times(this.e.y)).y
+    )
     this.p.pop();
   }
 }
