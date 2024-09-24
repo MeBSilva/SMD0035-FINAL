@@ -60,7 +60,7 @@ const sketch = (p: p5) => {
       particles.push(
         new Particle(
           p,
-          0.5,
+          10,
           new Vector3([newPoints[0], newPoints[1], 0]),
           new Vector3(),
         ),
@@ -225,7 +225,7 @@ const sketch = (p: p5) => {
       });
     buttons.createAABBFromPointsButton = p
       .createButton("create AABB")
-      .position(defaultXOffset * 3, defaultYOffset)
+      .position(defaultXOffset, defaultYOffset)
       .mousePressed(() => {
         volumes.push(
           generateAABB(
@@ -237,7 +237,7 @@ const sketch = (p: p5) => {
     buttons.createOBBFromPointsButton = p
       .createButton("create OBB")
       .position(
-        defaultXOffset * 4 + buttons.createAABBFromPointsButton.width,
+        defaultXOffset * 2 + buttons.createAABBFromPointsButton.width,
         defaultYOffset,
       )
       .mousePressed(() => {
@@ -251,7 +251,7 @@ const sketch = (p: p5) => {
     buttons.createCircleFromPointsButton = p
       .createButton("create circle")
       .position(
-        defaultXOffset * 5 +
+        defaultXOffset * 3 +
           buttons.createAABBFromPointsButton.width +
           buttons.createOBBFromPointsButton.width,
         defaultYOffset,
@@ -262,6 +262,39 @@ const sketch = (p: p5) => {
             p,
             particles.map((particle) => particle.center),
             100000,
+          ),
+        );
+      });
+    buttons.generateVertexCloudButton = p
+      .createButton("create cloud")
+      .position(
+        defaultXOffset * 4 +
+          buttons.createAABBFromPointsButton.width +
+          buttons.createOBBFromPointsButton.width +
+          buttons.createCircleFromPointsButton.width,
+        defaultYOffset,
+      )
+      .mousePressed(() => {
+        const { bottom, left, right, top } = {
+          left: -p.width / 2 + defaultXOffset,
+          right: p.width / 2 - defaultXOffset,
+          top: p.height / 2 - defaultYOffset * 2,
+          bottom: -p.height / 2 + defaultXOffset,
+        };
+        particles.push(
+          ...Array.from(
+            Array(10),
+            () =>
+              new Particle(
+                p,
+                10,
+                new Vector3([
+                  Math.random() * (right - left) + left,
+                  Math.random() * (top - bottom) + bottom,
+                  0,
+                ]),
+                new Vector3(),
+              ),
           ),
         );
       });
