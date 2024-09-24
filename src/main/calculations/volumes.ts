@@ -25,7 +25,7 @@ class DrawableAABB extends AABB implements Volume {
   }
 
   public containsPoint(point: Vector3){
-    return true;
+    return !(point.x < this.min.x || point.x > this.max.x || point.y < this.min.y || point.y > this.max.y) ;
   }
 }
 class DrawableCircleCollision implements Volume {
