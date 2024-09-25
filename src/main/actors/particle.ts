@@ -75,6 +75,10 @@ export class Particle implements Volume {
     this.center = new Vector3([this.aabb.center.x, this.aabb.center.y, 0]);
   }
 
+  public colides(volume: Volume) {
+    return false
+  }
+
   public draw() {
     const velocityArrow = this.velocity
       .toUnitVector()

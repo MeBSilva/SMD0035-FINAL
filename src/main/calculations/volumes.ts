@@ -1,6 +1,7 @@
 import { AABB } from "@/domain/AABB";
 import { OBB } from "@/domain/OBB";
 import { Vector3 } from "@/domain/Vector";
+import { Circle } from "@/domain/Circle";
 import type p5 from "p5";
 import { Particle } from "../actors/particle";
 import { Matrix3 } from "@/domain/Matrix";

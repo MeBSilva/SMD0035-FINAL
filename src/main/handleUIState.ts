@@ -329,7 +329,6 @@ const handleVolumeMode = ({
   if (selected.length === 2) {
     collision = selected[0].intersects(selected[1]);
   }
-
   p.push();
   p.scale(1, -1);
   p.textSize(15);
