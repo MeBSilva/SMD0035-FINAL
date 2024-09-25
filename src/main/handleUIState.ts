@@ -35,7 +35,7 @@ export const handleUIState = ({
   defaultXOffset: number;
   defaultYOffset: number;
   particles: Particle[];
-  volumes: Volume[];
+  volumes: Volume[][];
   points: number[];
 }) => {
   p.push();
@@ -291,7 +291,7 @@ const handleVolumeMode = ({
   p: p5;
   buttons: Buttons;
   particles: Particle[];
-  volumes: Volume[];
+  volumes: Volume[][];
   selectionMode: VolumeSelectionMode;
   defaultXOffset: number;
   defaultYOffset: number;
@@ -320,7 +320,7 @@ const handleVolumeMode = ({
     buttons.createVertexModeButton.attribute("disabled", "true");
   }
 
-  const selectables = (particles as Volume[]).concat(volumes);
+  const selectables = volumes.flat();
   const selected = selectables.filter((elem) => elem.isSelected);
 
   for (const selectable of selectables) {
