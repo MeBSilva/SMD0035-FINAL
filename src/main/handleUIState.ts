@@ -9,7 +9,7 @@ import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
-import type { Particle } from "./actors/particle";
+import { Particle } from "./actors/particle";
 import type { AppState, VolumeSelectionMode } from "./utils";
 import type { Volume } from "./calculations/volumes";
 
@@ -117,6 +117,9 @@ export const handleUIState = ({
       particles,
       volumes,
       selectionMode,
+      defaultXOffset,
+      defaultYOffset,
+      p,
     });
   else {
     buttons.createAABBFromPointsButton.attribute("hidden", "true");
@@ -281,11 +284,17 @@ const handleVolumeMode = ({
   particles,
   selectionMode,
   volumes,
+  p,
+  defaultXOffset,
+  defaultYOffset,
 }: {
+  p: p5;
   buttons: Buttons;
   particles: Particle[];
   volumes: Volume[];
   selectionMode: VolumeSelectionMode;
+  defaultXOffset: number;
+  defaultYOffset: number;
 }) => {
   buttons.angleModeButton.removeAttribute("disabled");
   buttons.particleModeButton.removeAttribute("disabled");
@@ -311,10 +320,33 @@ const handleVolumeMode = ({
     buttons.createVertexModeButton.attribute("disabled", "true");
   }
 
-  for (const particle of particles) {
-    particle.draw();
+  const selectables = (particles as Volume[]).concat(volumes);
+  const selected = selectables.filter((elem) => elem.isSelected);
+
+  for (const selectable of selectables) {
+    selectable.draw();
   }
-  for (const volume of volumes) {
-    volume.draw();
+
+  let collision = false;
+
+  if (selected.length === 2) {
+    const particle = selected.find((elem) => elem instanceof Particle);
+    const volume = particle
+      ? selected[0] === particle
+        ? selected[1]
+        : selected[0]
+      : selected[0];
+
+    if (particle && volume) collision = volume.contains(particle.center);
   }
+
+  p.push();
+  p.scale(1, -1);
+  p.textSize(15);
+  p.text(
+    `Possui colisão? ${collision}`,
+    -p.width / 2 + defaultXOffset,
+    -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
+  );
+  p.pop();
 };

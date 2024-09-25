@@ -9,7 +9,7 @@ type Entity = Segment3 | Particle;
 
 export class Particle implements Volume {
   private aabb: AABB;
-  private isSelected = false;
+  public isSelected = false;
 
   constructor(
     private readonly p: p5,
@@ -27,6 +27,10 @@ export class Particle implements Volume {
 
   public changeState() {
     this.isSelected = !this.isSelected;
+  }
+
+  public contains(vertex: Vector3) {
+    return this.center.minus(vertex).norm() <= this.radius;
   }
 
   public handleCollision(entities: Entity[], callback?: () => void) {
@@ -64,6 +68,7 @@ export class Particle implements Volume {
       .translate(this.center);
 
     this.p.push();
+    if (this.isSelected) this.p.fill("black");
     this.p.circle(this.center.x, this.center.y, this.radius * 2);
     drawArrow(
       this.p,

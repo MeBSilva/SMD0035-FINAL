@@ -61,10 +61,22 @@ const sketch = (p: p5) => {
       defaultYOffset,
       state,
     });
-    if (state === "volumes" && selectionMode === "select volume") {
-      const asda = (particles as Volume[])
-        .concat(volumes)
-        .filter((entity) => entity);
+    if (
+      state === "volumes" &&
+      newPoints.length > 0 &&
+      selectionMode === "select volume"
+    ) {
+      const selectables = (particles as Volume[]).concat(volumes);
+      const selected = selectables.filter((elem) => elem.isSelected);
+
+      for (const selectable of selectables) {
+        if (selectable.contains(new Vector3([newPoints[0], newPoints[1], 0]))) {
+          if (selected.length < 2 || selectable.isSelected) {
+            selectable.changeState();
+            return;
+          }
+        }
+      }
 
       return;
     }
