@@ -22,15 +22,8 @@ export class OBB {
       let [min_u, max_u] = this.projetar(vertices, current_u);
       let [min_v, max_v] = this.projetar(vertices, current_v);
 
-      console.log(index)
-      console.log(min_v, max_v);
-
       let extents = new Vector3([(max_u - min_u)/2, (max_v - min_v)/2, 0])
       let current_quarter_area = extents.x * extents.y;
-
-      console.log(extents)
-
-      console.log(current_quarter_area, this.quarter_area)
 
       if (current_quarter_area < this.quarter_area) {
         let u_center = current_u.times((max_u + min_u)/2);
@@ -42,7 +35,6 @@ export class OBB {
         this.v = current_v;
       }
       
-      console.log("~~~~~~~~~~~~~~~~~~")
     }
 
   }
@@ -53,8 +45,6 @@ export class OBB {
 
     for (const point of points) {
       let proj = point.projection(eixo);
-      console.log(point)
-      console.log(proj)
       let coord;
       if (proj.x * eixo.x >= 0) {
         if (proj.y * eixo.y >= 0) {
@@ -65,7 +55,6 @@ export class OBB {
       } else {
         coord = -proj.norm();
       }
-      console.log(coord)
       min_p = Math.min(coord, min_p);
       max_p = Math.max(coord, max_p);
     }
