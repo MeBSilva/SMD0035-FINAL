@@ -9,8 +9,8 @@ import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
-import type { Particle } from "./actors/particle";
-import type { AppState } from "./utils";
+import { Particle } from "./actors/particle";
+import type { AppState, VolumeSelectionMode } from "./utils";
 import type { Volume } from "./calculations/volumes";
 
 export const handleUIState = ({
@@ -24,8 +24,10 @@ export const handleUIState = ({
   particles,
   points,
   volumes,
+  selectionMode,
 }: {
   state: AppState;
+  selectionMode: VolumeSelectionMode;
   collisionPoint: Vector3 | undefined;
   segments: Segment3[];
   p: p5;
@@ -113,10 +115,10 @@ export const handleUIState = ({
     handleVolumeMode({
       buttons,
       particles,
-      segments,
+      volumes,
+      selectionMode,
       defaultXOffset,
       defaultYOffset,
-      volumes,
       p,
     });
   else {
@@ -124,6 +126,8 @@ export const handleUIState = ({
     buttons.createOBBFromPointsButton.attribute("hidden", "true");
     buttons.createCircleFromPointsButton.attribute("hidden", "true");
     buttons.generateVertexCloudButton.attribute("hidden", "true");
+    buttons.selectionModeButton.attribute("hidden", "true");
+    buttons.createVertexModeButton.attribute("hidden", "true");
 
     buttons.collisionButton.removeAttribute("hidden");
     buttons.showSumButton.removeAttribute("hidden");
@@ -278,17 +282,17 @@ const handleParticleMode = ({
 const handleVolumeMode = ({
   buttons,
   particles,
-  segments,
+  selectionMode,
+  volumes,
+  p,
   defaultXOffset,
   defaultYOffset,
-  p,
-  volumes,
 }: {
+  p: p5;
   buttons: Buttons;
   particles: Particle[];
   volumes: Volume[];
-  segments: Segment3[];
-  p: p5;
+  selectionMode: VolumeSelectionMode;
   defaultXOffset: number;
   defaultYOffset: number;
 }) => {
@@ -305,11 +309,44 @@ const handleVolumeMode = ({
   buttons.createOBBFromPointsButton.removeAttribute("hidden");
   buttons.createCircleFromPointsButton.removeAttribute("hidden");
   buttons.generateVertexCloudButton.removeAttribute("hidden");
+  buttons.selectionModeButton.removeAttribute("hidden");
+  buttons.createVertexModeButton.removeAttribute("hidden");
 
-  for (const particle of particles) {
-    particle.draw();
+  if (selectionMode === "select volume") {
+    buttons.selectionModeButton.attribute("disabled", "true");
+    buttons.createVertexModeButton.removeAttribute("disabled");
+  } else {
+    buttons.selectionModeButton.removeAttribute("disabled");
+    buttons.createVertexModeButton.attribute("disabled", "true");
   }
-  for (const volume of volumes) {
-    volume.draw();
+
+  const selectables = (particles as Volume[]).concat(volumes);
+  const selected = selectables.filter((elem) => elem.isSelected);
+
+  for (const selectable of selectables) {
+    selectable.draw();
   }
+
+  let collision = false;
+
+  if (selected.length === 2) {
+    const particle = selected.find((elem) => elem instanceof Particle);
+    const volume = particle
+      ? selected[0] === particle
+        ? selected[1]
+        : selected[0]
+      : selected[0];
+
+    if (particle && volume) collision = volume.contains(particle.center);
+  }
+
+  p.push();
+  p.scale(1, -1);
+  p.textSize(15);
+  p.text(
+    `Possui colisão? ${collision}`,
+    -p.width / 2 + defaultXOffset,
+    -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
+  );
+  p.pop();
 };

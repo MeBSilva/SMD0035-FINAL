@@ -4,7 +4,11 @@ import { setupCartesian } from "./setupCartesian";
 import { handleUIState } from "./handleUIState";
 import type { Buttons } from "./UI/buttons";
 import { Particle } from "./actors/particle";
-import { type AppState, handleMousePress } from "./utils";
+import {
+  type AppState,
+  handleMousePress,
+  type VolumeSelectionMode,
+} from "./utils";
 import type { Segment3 } from "@/domain/Segment";
 import {
   handleCollision,
@@ -20,6 +24,7 @@ import {
 
 const sketch = (p: p5) => {
   let state: AppState = "vectors";
+  let selectionMode: VolumeSelectionMode = "create point";
 
   const particles: Particle[] = [];
   const segments: Segment3[] = [];
@@ -56,6 +61,25 @@ const sketch = (p: p5) => {
       defaultYOffset,
       state,
     });
+    if (
+      state === "volumes" &&
+      newPoints.length > 0 &&
+      selectionMode === "select volume"
+    ) {
+      const selectables = (particles as Volume[]).concat(volumes);
+      const selected = selectables.filter((elem) => elem.isSelected);
+
+      for (const selectable of selectables) {
+        if (selectable.contains(new Vector3([newPoints[0], newPoints[1], 0]))) {
+          if (selected.length < 2 || selectable.isSelected) {
+            selectable.changeState();
+            return;
+          }
+        }
+      }
+
+      return;
+    }
     if (state === "volumes" && newPoints.length > 0)
       particles.push(
         new Particle(
@@ -289,14 +313,29 @@ const sketch = (p: p5) => {
                 p,
                 10,
                 new Vector3([
-                  Math.random() * (right/2 - left/2) + left/2,
-                  Math.random() * (top/2 - bottom/2) + bottom/2,
+                  Math.random() * (right / 2 - left / 2) + left / 2,
+                  Math.random() * (top / 2 - bottom / 2) + bottom / 2,
                   0,
                 ]),
                 new Vector3(),
               ),
           ),
         );
+      });
+    buttons.selectionModeButton = p
+      .createButton("selection mode")
+      .position(defaultXOffset, defaultYOffset * 2)
+      .mousePressed(() => {
+        selectionMode = "select volume";
+      });
+    buttons.createVertexModeButton = p
+      .createButton("create point mode")
+      .position(
+        defaultXOffset * 2 + buttons.selectionModeButton.width,
+        defaultYOffset * 2,
+      )
+      .mousePressed(() => {
+        selectionMode = "create point";
       });
   };
 
@@ -307,6 +346,7 @@ const sketch = (p: p5) => {
       buttons,
       p,
       state,
+      selectionMode,
       segments,
       collisionPoint,
       defaultXOffset,

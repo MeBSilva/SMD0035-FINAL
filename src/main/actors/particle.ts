@@ -3,11 +3,13 @@ import { getLimits, type Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import { drawArrow } from "../drawSegment";
+import type { Volume } from "../calculations/volumes";
 
 type Entity = Segment3 | Particle;
 
-export class Particle {
+export class Particle implements Volume {
   private aabb: AABB;
+  public isSelected = false;
 
   constructor(
     private readonly p: p5,
@@ -21,6 +23,14 @@ export class Particle {
       new Vector3([center.x - radius, center.y + radius, 0]),
       new Vector3([center.x + radius, center.y + radius, 0]),
     ]);
+  }
+
+  public changeState() {
+    this.isSelected = !this.isSelected;
+  }
+
+  public contains(vertex: Vector3) {
+    return this.center.minus(vertex).norm() <= this.radius;
   }
 
   public handleCollision(entities: Entity[], callback?: () => void) {
@@ -58,6 +68,7 @@ export class Particle {
       .translate(this.center);
 
     this.p.push();
+    if (this.isSelected) this.p.fill("black");
     this.p.circle(this.center.x, this.center.y, this.radius * 2);
     drawArrow(
       this.p,

@@ -15,7 +15,7 @@ const isMouseHittingNav = ({
     p.mouseX >= defaultXOffset &&
     p.mouseX <= p.width - defaultXOffset &&
     p.mouseY >= defaultYOffset &&
-    p.mouseY <= 30 + defaultYOffset
+    p.mouseY <= 3 * defaultYOffset
   )
     return true;
 
@@ -23,6 +23,7 @@ const isMouseHittingNav = ({
 };
 
 export type AppState = "angles" | "vectors" | "particles" | "volumes";
+export type VolumeSelectionMode = "create point" | "select volume";
 
 export const handleMousePress = ({
   p,
