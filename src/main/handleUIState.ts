@@ -9,7 +9,7 @@ import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
-import { Particle } from "./actors/particle";
+import type { Particle } from "./actors/particle";
 import type { AppState, VolumeSelectionMode } from "./utils";
 import type { Volume } from "./calculations/volumes";
 
@@ -114,7 +114,6 @@ export const handleUIState = ({
   if (state === "volumes")
     handleVolumeMode({
       buttons,
-      particles,
       volumes,
       selectionMode,
       defaultXOffset,
@@ -281,7 +280,6 @@ const handleParticleMode = ({
 
 const handleVolumeMode = ({
   buttons,
-  particles,
   selectionMode,
   volumes,
   p,
@@ -290,7 +288,6 @@ const handleVolumeMode = ({
 }: {
   p: p5;
   buttons: Buttons;
-  particles: Particle[];
   volumes: Volume[][];
   selectionMode: VolumeSelectionMode;
   defaultXOffset: number;
@@ -330,21 +327,14 @@ const handleVolumeMode = ({
   let collision = false;
 
   if (selected.length === 2) {
-    const particle = selected.find((elem) => elem instanceof Particle);
-    const volume = particle
-      ? selected[0] === particle
-        ? selected[1]
-        : selected[0]
-      : selected[0];
-
-    if (particle && volume) collision = volume.contains(particle.center);
+    collision = selected[0].intersects(selected[1]);
   }
 
   p.push();
   p.scale(1, -1);
   p.textSize(15);
   p.text(
-    `Possui colisão? ${collision}`,
+    `Possui interseção? ${collision}`,
     -p.width / 2 + defaultXOffset,
     -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
   );

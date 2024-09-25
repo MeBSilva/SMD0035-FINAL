@@ -2,14 +2,17 @@ import { AABB } from "@/domain/AABB";
 import { OBB } from "@/domain/OBB";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
+import { Particle } from "../actors/particle";
+import { Matrix3 } from "@/domain/Matrix";
 
 export type Volume = {
   draw: () => void;
   isSelected: boolean;
   changeState: () => void;
   contains: (vertex: Vector3) => boolean;
+  intersects: (volume: Volume) => boolean;
 };
-class DrawableAABB extends AABB implements Volume {
+export class DrawableAABB extends AABB implements Volume {
   public isSelected = false;
 
   constructor(
@@ -36,6 +39,28 @@ class DrawableAABB extends AABB implements Volume {
     return true;
   }
 
+  public intersects(that: Volume) {
+    if (that instanceof Particle) return this.contains(that.center);
+    if (that instanceof DrawableAABB) return this.collidesWith(that);
+    if (that instanceof DrawableCircleCollision) {
+      let d2 = 0;
+
+      if (that.center.x > this.max.x) d2 += (this.max.x - that.center.x) ** 2;
+      else if (that.center.x < this.min.x)
+        d2 += (this.min.x - that.center.x) ** 2;
+
+      if (that.center.y > this.max.y) d2 += (this.max.y - that.center.y) ** 2;
+      else if (that.center.y < this.min.y)
+        d2 += (this.min.y - that.center.y) ** 2;
+
+      if (that.r2 >= d2) return true;
+
+      return false;
+    }
+
+    return false;
+  }
+
   public draw() {
     this.p.push();
     this.p.fill(0, 0, 0, 0);
@@ -49,9 +74,10 @@ class DrawableAABB extends AABB implements Volume {
     this.p.pop();
   }
 }
-class DrawableCircleCollision implements Volume {
-  private center: Vector3;
-  private radius: number;
+export class DrawableCircleCollision implements Volume {
+  public center: Vector3;
+  public radius: number;
+  public r2: number;
   public isSelected = false;
 
   constructor(
@@ -95,6 +121,7 @@ class DrawableCircleCollision implements Volume {
 
     this.center = center;
     this.radius = radius;
+    this.r2 = radius ** 2;
   }
 
   public changeState() {
@@ -105,6 +132,16 @@ class DrawableCircleCollision implements Volume {
     return this.center.minus(vertex).norm() <= this.radius;
   }
 
+  public intersects(that: Volume) {
+    if (that instanceof Particle) return this.contains(that.center);
+    if (that instanceof DrawableCircleCollision)
+      return this.center.minus(that.center).norm() <= this.radius + that.radius;
+    if (that instanceof DrawableAABB) return that.intersects(this);
+    if (that instanceof DrawableOBB) return that.intersects(this);
+
+    return false;
+  }
+
   public draw() {
     this.p.push();
     this.p.fill(0, 0, 0, 0);
@@ -113,7 +150,7 @@ class DrawableCircleCollision implements Volume {
     this.p.pop();
   }
 }
-class DrawableOBB extends OBB implements Volume {
+export class DrawableOBB extends OBB implements Volume {
   public isSelected = false;
 
   constructor(
@@ -150,6 +187,38 @@ class DrawableOBB extends OBB implements Volume {
     )
       return false;
     return true;
+  }
+
+  public intersects(that: Volume) {
+    if (that instanceof Particle) return this.contains(that.center);
+    if (that instanceof DrawableCircleCollision) {
+      const centerAtOrigin = that.center.minus(this.center);
+
+      const rotationMatrix = new Matrix3([
+        [this.u.x, this.v.x],
+        [this.u.y, this.v.y],
+      ]);
+
+      const rotatedCircle = new DrawableCircleCollision(this.p, []);
+      rotatedCircle.radius = that.radius;
+      rotatedCircle.r2 = that.r2;
+      rotatedCircle.center = rotationMatrix.dot(centerAtOrigin);
+
+      const maxU = this.u.times(this.e.x);
+      const minU = new Vector3().minus(this.u.times(this.e.x));
+      const maxV = this.v.times(this.e.y);
+      const minV = new Vector3().minus(this.v.times(this.e.y));
+
+      const p1 = rotationMatrix.dot(maxU.plus(maxV));
+      const p2 = rotationMatrix.dot(maxU.plus(minV));
+      const p3 = rotationMatrix.dot(minU.plus(minV));
+      const p4 = rotationMatrix.dot(minU.plus(maxV));
+
+      const aabb = new DrawableAABB(this.p, [p1, p2, p3, p4]);
+      return aabb.intersects(rotatedCircle);
+    }
+
+    return false;
   }
 
   public draw() {
