@@ -26,6 +26,14 @@ export class AABB {
     this.lastMax = new Vector3([this.max.x, this.max.y, this.max.z]);
   }
 
+  public getMin () {
+    return this.min
+  }
+
+  public getMax() {
+    return this.max
+  }
+
   public wasAbove(that: AABB) {
     return this.lastMin.y > that.lastMax.y;
   }

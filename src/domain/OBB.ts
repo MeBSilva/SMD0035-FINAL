@@ -1,5 +1,4 @@
 import { Vector3 } from "./Vector";
-import { AABB } from "./AABB"
 
 export class OBB {
   protected center: Vector3;

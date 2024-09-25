@@ -1,6 +1,7 @@
 import { AABB } from "@/domain/AABB";
 import { OBB } from "@/domain/OBB";
 import { Vector3 } from "@/domain/Vector";
+import { Circle } from "@/domain/Circle"
 import type p5 from "p5";
 
 export type Volume = {
@@ -8,6 +9,7 @@ export type Volume = {
   isSelected: boolean;
   changeState: () => void;
   contains: (vertex: Vector3) => boolean;
+  colides: (that: Volume) => boolean;
 };
 class DrawableAABB extends AABB implements Volume {
   public isSelected = false;
@@ -36,6 +38,24 @@ class DrawableAABB extends AABB implements Volume {
     return true;
   }
 
+  public colides(that: Volume) {
+    if (that instanceof AABB) {
+      return !(
+        this.max.x < that.getMin().x ||
+        this.min.x > that.getMax().x ||
+        this.max.y < that.getMin().y ||
+        this.min.y > that.getMax().y
+      )
+    };
+    if (that instanceof OBB) {
+      return false
+    }
+    if (that instanceof Circle) {
+      if (this.contains(that.getCenter())) return true;
+    }
+    return false
+  }
+
   public draw() {
     this.p.push();
     this.p.fill(0, 0, 0, 0);
@@ -49,52 +69,15 @@ class DrawableAABB extends AABB implements Volume {
     this.p.pop();
   }
 }
-class DrawableCircleCollision implements Volume {
-  private center: Vector3;
-  private radius: number;
+class DrawableCircle extends Circle implements Volume {
   public isSelected = false;
 
   constructor(
-    private readonly p: p5,
+    p: p5,
     vertices: Vector3[],
     k?: number,
   ) {
-    const radii: [Vector3, number][] = [];
-
-    const { bottom, left, right, top } = {
-      left: -p.width / 2,
-      right: p.width / 2,
-      top: p.height / 2,
-      bottom: -p.height / 2,
-    };
-    for (let index = 0; index < (k ?? 10); index++) {
-      const center = new Vector3([
-        Math.random() * (right - left) + left,
-        Math.random() * (top - bottom) + bottom,
-        0,
-      ]);
-
-      let maxDistance = Number.NEGATIVE_INFINITY;
-
-      for (const vertex of vertices) {
-        const distance = Math.sqrt(
-          (vertex.x - center.x) ** 2 + (vertex.y - center.y) ** 2,
-        );
-
-        if (distance > maxDistance) maxDistance = distance;
-      }
-
-      radii.push([center, maxDistance]);
-    }
-
-    const [center, radius] = radii.reduce(
-      (accumulator, currentItem) =>
-        currentItem[1] >= accumulator[1] ? accumulator : currentItem,
-      radii[0],
-    );
-
-    this.center = center;
-    this.radius = radius;
+    super(p, vertices, k)
   }
 
   public changeState() {
@@ -103,6 +86,10 @@ class DrawableCircleCollision implements Volume {
 
   public contains(vertex: Vector3) {
     return this.center.minus(vertex).norm() <= this.radius;
+  }
+
+  public colides(that: Volume) {
+    return false
   }
 
   public draw() {
@@ -152,6 +139,10 @@ class DrawableOBB extends OBB implements Volume {
     return true;
   }
 
+  public colides(that: Volume) {
+    return false
+  }
+
   public draw() {
     this.p.push();
     this.p.fill(0, 0, 0, 0);
@@ -176,4 +167,4 @@ export const generateOBB = (p: p5, points: Vector3[]) =>
 export const generateAABB = (p: p5, points: Vector3[]) =>
   new DrawableAABB(p, points);
 export const generateCircle = (p: p5, points: Vector3[], k?: number) =>
-  new DrawableCircleCollision(p, points, k);
+  new DrawableCircle(p, points, k);

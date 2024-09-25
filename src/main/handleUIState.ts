@@ -331,15 +331,20 @@ const handleVolumeMode = ({
 
   if (selected.length === 2) {
     const particle = selected.find((elem) => elem instanceof Particle);
-    const volume = particle
+    const volume1 = particle
       ? selected[0] === particle
         ? selected[1]
         : selected[0]
       : selected[0];
+    const volume2 = volume1
+      ? selected[0] === volume1
+        ? selected[1]
+        : selected[0]
+      : selected[0];
 
-    if (particle && volume) collision = volume.contains(particle.center);
+    if (particle && volume1) collision = volume1.contains(particle.center);
+    else { if (volume1 && volume2) collision = volume1.colides(volume2) }
   }
-
   p.push();
   p.scale(1, -1);
   p.textSize(15);
