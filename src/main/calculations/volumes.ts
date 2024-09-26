@@ -237,7 +237,6 @@ export class DrawableOBB extends OBB implements Volume {
         p3.projection(new Vector3([1, 0, 0])),
         p4.projection(new Vector3([1, 0, 0])),
       ];
-
       const [minProjectionOnX, maxProjectionOnX] = projectionsOnX.reduce(
         (accumulator, currentItem) => {
           if (currentItem.x < accumulator[0].x) accumulator[0] = currentItem;
@@ -259,7 +258,6 @@ export class DrawableOBB extends OBB implements Volume {
         p3.projection(new Vector3([0, 1, 0])),
         p4.projection(new Vector3([0, 1, 0])),
       ];
-
       const [minProjectionOnY, maxProjectionOnY] = projectionsOnY.reduce(
         (accumulator, currentItem) => {
           if (currentItem.y < accumulator[0].y) accumulator[0] = currentItem;
@@ -275,8 +273,94 @@ export class DrawableOBB extends OBB implements Volume {
       )
         return true;
 
+      const aabbP1 = that.max.minus(this.center);
+      const aabbP2 = new Vector3([that.max.x, that.min.y, 0]).minus(
+        this.center,
+      );
+      const aabbP3 = that.min.minus(this.center);
+      const aabbP4 = new Vector3([that.min.x, that.max.y, 0]).minus(
+        this.center,
+      );
+
+      const aabbProjectionsOnU = [
+        aabbP1.projection(this.u),
+        aabbP2.projection(this.u),
+        aabbP3.projection(this.u),
+        aabbP4.projection(this.u),
+      ];
+      const [aabbMinProjectionOnU, aabbMaxProjectionOnU] =
+        aabbProjectionsOnU.reduce(
+          (accumulator, currentItem) => {
+            if (currentItem.x < accumulator[0].x) accumulator[0] = currentItem;
+            if (currentItem.x > accumulator[1].x) accumulator[1] = currentItem;
+            return accumulator;
+          },
+          [aabbProjectionsOnU[0], aabbProjectionsOnU[1]] as [Vector3, Vector3],
+        );
+      if (
+        (aabbMaxProjectionOnU.x <= this.e.x &&
+          aabbMaxProjectionOnU.x >= new Vector3().minus(this.e).x) ||
+        (aabbMinProjectionOnU.x <= this.e.x &&
+          aabbMinProjectionOnU.x >= new Vector3().minus(this.e).x)
+      )
+        return true;
+
+      const aabbProjectionsOnV = [
+        aabbP1.projection(this.v),
+        aabbP2.projection(this.v),
+        aabbP3.projection(this.v),
+        aabbP4.projection(this.v),
+      ];
+      const [aabbMinProjectionOnV, aabbMaxProjectionOnV] =
+        aabbProjectionsOnV.reduce(
+          (accumulator, currentItem) => {
+            if (currentItem.y < accumulator[0].y) accumulator[0] = currentItem;
+            if (currentItem.y > accumulator[1].y) accumulator[1] = currentItem;
+            return accumulator;
+          },
+          [aabbProjectionsOnV[0], aabbProjectionsOnV[1]] as [Vector3, Vector3],
+        );
+      if (
+        (aabbMaxProjectionOnV.y <= this.e.y &&
+          aabbMaxProjectionOnV.y >= new Vector3().minus(this.e).y) ||
+        (aabbMinProjectionOnV.y <= this.e.y &&
+          aabbMinProjectionOnV.y >= new Vector3().minus(this.e).y)
+      )
+        return true;
+
       return false;
     }
+
+    // if (that instanceof DrawableOBB) {
+    //   const maxU = this.u.times(this.e.x);
+    //   const minU = new Vector3().minus(this.u.times(this.e.x));
+    //   const maxV = this.v.times(this.e.y);
+    //   const minV = new Vector3().minus(this.v.times(this.e.y));
+
+    //   const rotationMatrix = new Matrix3([
+    //     [this.u.x, this.v.x],
+    //     [this.u.y, this.v.y],
+    //   ]);
+
+    //   const centerAtOrigin = that.center.minus(this.center);
+
+    //   const rotatedOBB = new DrawableOBB(this.p, [new Vector3()]);
+    //   rotatedOBB.quarter_area = that.quarter_area;
+    //   rotatedOBB.e = that.e;
+    //   rotatedOBB.u = that.u;
+    //   rotatedOBB.v = that.v;
+    //   rotatedOBB.center = rotationMatrix.dot(centerAtOrigin);
+
+    //   const p1 = rotationMatrix.dot(maxU.plus(maxV));
+    //   const p2 = rotationMatrix.dot(maxU.plus(minV));
+    //   const p3 = rotationMatrix.dot(minU.plus(minV));
+    //   const p4 = rotationMatrix.dot(minU.plus(maxV));
+
+    //   const aabb = new DrawableAABB(this.p, [p1, p2, p3, p4]);
+    //   console.log("hey dud", aabb.min, aabb.max);
+    //   console.log("hey dud2", rotatedOBB);
+    //   return aabb.intersects(rotatedOBB);
+    // }
 
     return false;
   }
