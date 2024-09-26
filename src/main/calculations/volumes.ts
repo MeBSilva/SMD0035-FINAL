@@ -331,36 +331,36 @@ export class DrawableOBB extends OBB implements Volume {
       return false;
     }
 
-    // if (that instanceof DrawableOBB) {
-    //   const maxU = this.u.times(this.e.x);
-    //   const minU = new Vector3().minus(this.u.times(this.e.x));
-    //   const maxV = this.v.times(this.e.y);
-    //   const minV = new Vector3().minus(this.v.times(this.e.y));
+    if (that instanceof DrawableOBB) {
+      const maxU = this.u.times(this.e.x);
+      const minU = new Vector3().minus(this.u.times(this.e.x));
+      const maxV = this.v.times(this.e.y);
+      const minV = new Vector3().minus(this.v.times(this.e.y));
 
-    //   const rotationMatrix = new Matrix3([
-    //     [this.u.x, this.v.x],
-    //     [this.u.y, this.v.y],
-    //   ]);
+      const rotationMatrix = new Matrix3([
+        [this.u.x, this.v.x, 0],
+        [this.u.y, this.v.y, 0],
+        [0, 0, 1],
+      ]);
 
-    //   const centerAtOrigin = that.center.minus(this.center);
+      const centerAtOrigin = that.center.minus(this.center);
 
-    //   const rotatedOBB = new DrawableOBB(this.p, [new Vector3()]);
-    //   rotatedOBB.quarter_area = that.quarter_area;
-    //   rotatedOBB.e = that.e;
-    //   rotatedOBB.u = that.u;
-    //   rotatedOBB.v = that.v;
-    //   rotatedOBB.center = rotationMatrix.dot(centerAtOrigin);
+      const rotatedOBB = new DrawableOBB(this.p, [new Vector3()]);
+      rotatedOBB.quarter_area = that.quarter_area;
+      rotatedOBB.e = that.e;
+      rotatedOBB.u = rotationMatrix.dot(that.u);
+      rotatedOBB.v = rotationMatrix.dot(that.v);
+      rotatedOBB.center = rotationMatrix.dot(centerAtOrigin);
 
-    //   const p1 = rotationMatrix.dot(maxU.plus(maxV));
-    //   const p2 = rotationMatrix.dot(maxU.plus(minV));
-    //   const p3 = rotationMatrix.dot(minU.plus(minV));
-    //   const p4 = rotationMatrix.dot(minU.plus(maxV));
+      const p1 = rotationMatrix.dot(maxU.plus(maxV));
+      const p2 = rotationMatrix.dot(maxU.plus(minV));
+      const p3 = rotationMatrix.dot(minU.plus(minV));
+      const p4 = rotationMatrix.dot(minU.plus(maxV));
 
-    //   const aabb = new DrawableAABB(this.p, [p1, p2, p3, p4]);
-    //   console.log("hey dud", aabb.min, aabb.max);
-    //   console.log("hey dud2", rotatedOBB);
-    //   return aabb.intersects(rotatedOBB);
-    // }
+      const aabb = new DrawableAABB(this.p, [p1, p2, p3, p4]);
+
+      return aabb.intersects(rotatedOBB);
+    }
 
     return false;
   }
