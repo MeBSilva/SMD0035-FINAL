@@ -40,7 +40,7 @@ export class DrawableAABB extends AABB implements Volume {
     return true;
   }
 
-  public intersects(that: Volume) {
+  public intersects(that: Volume): boolean {
     if (that instanceof Particle) return this.contains(that.center);
     if (that instanceof DrawableAABB) return this.collidesWith(that);
     if (that instanceof DrawableCircleCollision) {
@@ -58,6 +58,7 @@ export class DrawableAABB extends AABB implements Volume {
 
       return false;
     }
+    if (that instanceof DrawableOBB) return that.intersects(this);
 
     return false;
   }
@@ -217,6 +218,64 @@ export class DrawableOBB extends OBB implements Volume {
 
       const aabb = new DrawableAABB(this.p, [p1, p2, p3, p4]);
       return aabb.intersects(rotatedCircle);
+    }
+
+    if (that instanceof DrawableAABB) {
+      const maxU = this.u.times(this.e.x);
+      const minU = new Vector3().minus(this.u.times(this.e.x));
+      const maxV = this.v.times(this.e.y);
+      const minV = new Vector3().minus(this.v.times(this.e.y));
+
+      const p1 = maxU.plus(maxV).plus(this.center);
+      const p2 = maxU.plus(minV).plus(this.center);
+      const p3 = minU.plus(minV).plus(this.center);
+      const p4 = minU.plus(maxV).plus(this.center);
+
+      const projectionsOnX = [
+        p1.projection(new Vector3([1, 0, 0])),
+        p2.projection(new Vector3([1, 0, 0])),
+        p3.projection(new Vector3([1, 0, 0])),
+        p4.projection(new Vector3([1, 0, 0])),
+      ];
+
+      const [minProjectionOnX, maxProjectionOnX] = projectionsOnX.reduce(
+        (accumulator, currentItem) => {
+          if (currentItem.x < accumulator[0].x) accumulator[0] = currentItem;
+          if (currentItem.x > accumulator[1].x) accumulator[1] = currentItem;
+          return accumulator;
+        },
+        [projectionsOnX[0], projectionsOnX[1]] as [Vector3, Vector3],
+      );
+      if (
+        (maxProjectionOnX.x <= that.max.x &&
+          maxProjectionOnX.x >= that.min.x) ||
+        (minProjectionOnX.x <= that.max.x && minProjectionOnX.x >= that.min.x)
+      )
+        return true;
+
+      const projectionsOnY = [
+        p1.projection(new Vector3([0, 1, 0])),
+        p2.projection(new Vector3([0, 1, 0])),
+        p3.projection(new Vector3([0, 1, 0])),
+        p4.projection(new Vector3([0, 1, 0])),
+      ];
+
+      const [minProjectionOnY, maxProjectionOnY] = projectionsOnY.reduce(
+        (accumulator, currentItem) => {
+          if (currentItem.y < accumulator[0].y) accumulator[0] = currentItem;
+          if (currentItem.y > accumulator[1].y) accumulator[1] = currentItem;
+          return accumulator;
+        },
+        [projectionsOnY[0], projectionsOnY[1]] as [Vector3, Vector3],
+      );
+      if (
+        (maxProjectionOnY.y <= that.max.y &&
+          maxProjectionOnY.y >= that.min.y) ||
+        (minProjectionOnY.y <= that.max.y && minProjectionOnY.y >= that.min.y)
+      )
+        return true;
+
+      return false;
     }
 
     return false;

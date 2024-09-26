@@ -1,9 +1,9 @@
 import { Vector3 } from "./Vector";
 
 export class AABB {
-  protected min: Vector3;
+  public min: Vector3;
   protected lastMin: Vector3;
-  protected max: Vector3;
+  public max: Vector3;
   protected lastMax: Vector3;
 
   constructor(vertices: Vector3[]) {
@@ -26,12 +26,12 @@ export class AABB {
     this.lastMax = new Vector3([this.max.x, this.max.y, this.max.z]);
   }
 
-  public getMin () {
-    return this.min
+  public getMin() {
+    return this.min;
   }
 
   public getMax() {
-    return this.max
+    return this.max;
   }
 
   public wasAbove(that: AABB) {
