@@ -245,12 +245,9 @@ export class DrawableOBB extends OBB implements Volume {
         },
         [projectionsOnX[0], projectionsOnX[1]] as [Vector3, Vector3],
       );
-      if (
-        (maxProjectionOnX.x <= that.max.x &&
-          maxProjectionOnX.x >= that.min.x) ||
-        (minProjectionOnX.x <= that.max.x && minProjectionOnX.x >= that.min.x)
-      )
-        return true;
+      if (maxProjectionOnX.x < that.min.x || minProjectionOnX.x > that.max.x) {
+        return false;
+      }
 
       const projectionsOnY = [
         p1.projection(new Vector3([0, 1, 0])),
@@ -266,12 +263,9 @@ export class DrawableOBB extends OBB implements Volume {
         },
         [projectionsOnY[0], projectionsOnY[1]] as [Vector3, Vector3],
       );
-      if (
-        (maxProjectionOnY.y <= that.max.y &&
-          maxProjectionOnY.y >= that.min.y) ||
-        (minProjectionOnY.y <= that.max.y && minProjectionOnY.y >= that.min.y)
-      )
-        return true;
+      if (maxProjectionOnY.y < that.min.y || minProjectionOnY.y > that.max.y) {
+        return false;
+      }
 
       const aabbP1 = that.max.minus(this.center);
       const aabbP2 = new Vector3([that.max.x, that.min.y, 0]).minus(
@@ -298,12 +292,11 @@ export class DrawableOBB extends OBB implements Volume {
           [aabbProjectionsOnU[0], aabbProjectionsOnU[1]] as [Vector3, Vector3],
         );
       if (
-        (aabbMaxProjectionOnU.x <= this.e.x &&
-          aabbMaxProjectionOnU.x >= new Vector3().minus(this.e).x) ||
-        (aabbMinProjectionOnU.x <= this.e.x &&
-          aabbMinProjectionOnU.x >= new Vector3().minus(this.e).x)
-      )
-        return true;
+        aabbMaxProjectionOnU.x < new Vector3().minus(this.e).x ||
+        aabbMinProjectionOnU.x > this.e.x
+      ) {
+        return false;
+      }
 
       const aabbProjectionsOnV = [
         aabbP1.projection(this.v),
@@ -321,14 +314,13 @@ export class DrawableOBB extends OBB implements Volume {
           [aabbProjectionsOnV[0], aabbProjectionsOnV[1]] as [Vector3, Vector3],
         );
       if (
-        (aabbMaxProjectionOnV.y <= this.e.y &&
-          aabbMaxProjectionOnV.y >= new Vector3().minus(this.e).y) ||
-        (aabbMinProjectionOnV.y <= this.e.y &&
-          aabbMinProjectionOnV.y >= new Vector3().minus(this.e).y)
-      )
-        return true;
+        aabbMaxProjectionOnV.y < new Vector3().minus(this.e).y ||
+        aabbMinProjectionOnV.y > this.e.y
+      ) {
+        return false;
+      }
 
-      return false;
+      return true;
     }
 
     if (that instanceof DrawableOBB) {
