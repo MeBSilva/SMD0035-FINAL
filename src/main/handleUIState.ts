@@ -9,7 +9,7 @@ import type { Buttons } from "./UI/buttons";
 import { drawArrow, drawSegment } from "./drawSegment";
 import type { Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
-import { Particle } from "./actors/particle";
+import type { Particle } from "./actors/particle";
 import type { AppState, VolumeSelectionMode } from "./utils";
 import type { Volume } from "./calculations/volumes";
 
@@ -35,7 +35,7 @@ export const handleUIState = ({
   defaultXOffset: number;
   defaultYOffset: number;
   particles: Particle[];
-  volumes: Volume[];
+  volumes: Volume[][];
   points: number[];
 }) => {
   p.push();
@@ -114,7 +114,6 @@ export const handleUIState = ({
   if (state === "volumes")
     handleVolumeMode({
       buttons,
-      particles,
       volumes,
       selectionMode,
       defaultXOffset,
@@ -281,7 +280,6 @@ const handleParticleMode = ({
 
 const handleVolumeMode = ({
   buttons,
-  particles,
   selectionMode,
   volumes,
   p,
@@ -290,8 +288,7 @@ const handleVolumeMode = ({
 }: {
   p: p5;
   buttons: Buttons;
-  particles: Particle[];
-  volumes: Volume[];
+  volumes: Volume[][];
   selectionMode: VolumeSelectionMode;
   defaultXOffset: number;
   defaultYOffset: number;
@@ -320,7 +317,7 @@ const handleVolumeMode = ({
     buttons.createVertexModeButton.attribute("disabled", "true");
   }
 
-  const selectables = (particles as Volume[]).concat(volumes);
+  const selectables = volumes.flat();
   const selected = selectables.filter((elem) => elem.isSelected);
 
   for (const selectable of selectables) {
@@ -330,26 +327,13 @@ const handleVolumeMode = ({
   let collision = false;
 
   if (selected.length === 2) {
-    const particle = selected.find((elem) => elem instanceof Particle);
-    const volume1 = particle
-      ? selected[0] === particle
-        ? selected[1]
-        : selected[0]
-      : selected[0];
-    const volume2 = volume1
-      ? selected[0] === volume1
-        ? selected[1]
-        : selected[0]
-      : selected[0];
-
-    if (particle && volume1) collision = volume1.contains(particle.center);
-    else { if (volume1 && volume2) collision = volume1.colides(volume2) }
+    collision = selected[0].intersects(selected[1]);
   }
   p.push();
   p.scale(1, -1);
   p.textSize(15);
   p.text(
-    `Possui colisão? ${collision}`,
+    `Possui interseção? ${collision}`,
     -p.width / 2 + defaultXOffset,
     -p.height / 2 + buttons.collisionButton.height * 2 + defaultYOffset,
   );

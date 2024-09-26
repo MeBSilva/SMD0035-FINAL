@@ -3,7 +3,12 @@ import { getLimits, type Segment3 } from "@/domain/Segment";
 import { Vector3 } from "@/domain/Vector";
 import type p5 from "p5";
 import { drawArrow } from "../drawSegment";
-import type { Volume } from "../calculations/volumes";
+import {
+  DrawableAABB,
+  DrawableCircleCollision,
+  DrawableOBB,
+  type Volume,
+} from "../calculations/volumes";
 
 type Entity = Segment3 | Particle;
 
@@ -31,6 +36,15 @@ export class Particle implements Volume {
 
   public contains(vertex: Vector3) {
     return this.center.minus(vertex).norm() <= this.radius;
+  }
+
+  public intersects(that: Volume) {
+    if (that instanceof Particle) return this.contains(that.center);
+    if (that instanceof DrawableCircleCollision) return that.intersects(this);
+    if (that instanceof DrawableAABB) return that.intersects(this);
+    if (that instanceof DrawableOBB) return that.intersects(this);
+
+    return false;
   }
 
   public handleCollision(entities: Entity[], callback?: () => void) {

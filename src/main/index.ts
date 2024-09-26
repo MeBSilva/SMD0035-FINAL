@@ -29,7 +29,8 @@ const sketch = (p: p5) => {
   const particles: Particle[] = [];
   const segments: Segment3[] = [];
   const points: number[] = [];
-  const volumes: Volume[] = [];
+  const volumes: Volume[][] = [];
+  let volumeGroupIndex = 0;
 
   const defaultXOffset = 15;
   const defaultYOffset = 50;
@@ -51,6 +52,13 @@ const sketch = (p: p5) => {
     collisionPoint = undefined;
     particles.splice(0, particles.length);
     volumes.splice(0, volumes.length);
+    volumeGroupIndex = -1;
+    startNewVolumeGroup();
+  };
+
+  const startNewVolumeGroup = () => {
+    volumeGroupIndex += 1;
+    volumes[volumeGroupIndex] = [];
   };
 
   p.mousePressed = (_) => {
@@ -66,7 +74,7 @@ const sketch = (p: p5) => {
       newPoints.length > 0 &&
       selectionMode === "select volume"
     ) {
-      const selectables = (particles as Volume[]).concat(volumes);
+      const selectables = volumes.flat();
       const selected = selectables.filter((elem) => elem.isSelected);
 
       for (const selectable of selectables) {
@@ -80,8 +88,11 @@ const sketch = (p: p5) => {
 
       return;
     }
-    if (state === "volumes" && newPoints.length > 0)
-      particles.push(
+    if (state === "volumes" && newPoints.length > 0) {
+      const group: undefined | Volume[] = volumes[volumeGroupIndex];
+
+      if (!group) volumes[volumeGroupIndex] = [];
+      volumes[volumeGroupIndex].push(
         new Particle(
           p,
           10,
@@ -89,7 +100,7 @@ const sketch = (p: p5) => {
           new Vector3(),
         ),
       );
-    else points.push(...newPoints);
+    } else points.push(...newPoints);
   };
 
   p.setup = () => {
@@ -251,12 +262,15 @@ const sketch = (p: p5) => {
       .createButton("create AABB")
       .position(defaultXOffset, defaultYOffset)
       .mousePressed(() => {
-        volumes.push(
+        volumes[volumeGroupIndex].push(
           generateAABB(
             p,
-            particles.map((particle) => particle.center),
+            volumes[volumeGroupIndex]
+              .filter((volume) => volume instanceof Particle)
+              .map((particle) => particle.center),
           ),
         );
+        startNewVolumeGroup();
       });
     buttons.createOBBFromPointsButton = p
       .createButton("create OBB")
@@ -265,12 +279,15 @@ const sketch = (p: p5) => {
         defaultYOffset,
       )
       .mousePressed(() => {
-        volumes.push(
+        volumes[volumeGroupIndex].push(
           generateOBB(
             p,
-            particles.map((particle) => particle.center),
+            volumes[volumeGroupIndex]
+              .filter((volume) => volume instanceof Particle)
+              .map((particle) => particle.center),
           ),
         );
+        startNewVolumeGroup();
       });
     buttons.createCircleFromPointsButton = p
       .createButton("create circle")
@@ -281,13 +298,16 @@ const sketch = (p: p5) => {
         defaultYOffset,
       )
       .mousePressed(() => {
-        volumes.push(
+        volumes[volumeGroupIndex].push(
           generateCircle(
             p,
-            particles.map((particle) => particle.center),
+            volumes[volumeGroupIndex]
+              .filter((volume) => volume instanceof Particle)
+              .map((particle) => particle.center),
             100000,
           ),
         );
+        startNewVolumeGroup();
       });
     buttons.generateVertexCloudButton = p
       .createButton("create cloud")
@@ -305,7 +325,7 @@ const sketch = (p: p5) => {
           top: p.height / 2 - defaultYOffset * 2,
           bottom: -p.height / 2 + defaultXOffset,
         };
-        particles.push(
+        volumes[volumeGroupIndex].push(
           ...Array.from(
             Array(10),
             () =>
